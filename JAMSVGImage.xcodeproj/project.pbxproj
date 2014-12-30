@@ -47,6 +47,7 @@
 		63D2068318EF501F00FAC851 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D2068218EF501F00FAC851 /* main.m */; };
 		63D2068718EF501F00FAC851 /* JAMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D2068618EF501F00FAC851 /* JAMAppDelegate.m */; };
 		63D2069218EF501F00FAC851 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63D2069118EF501F00FAC851 /* Images.xcassets */; };
+		723B244D1A52AF75004B7587 /* map_north_1.svg in Resources */ = {isa = PBXBuildFile; fileRef = 723B244C1A52AF75004B7587 /* map_north_1.svg */; };
 		EB5881E019D5CE2900797A2E /* Launch.xib in Resources */ = {isa = PBXBuildFile; fileRef = EB5881DF19D5CE2900797A2E /* Launch.xib */; };
 /* End PBXBuildFile section */
 
@@ -104,6 +105,7 @@
 		63D2068518EF501F00FAC851 /* JAMAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JAMAppDelegate.h; sourceTree = "<group>"; };
 		63D2068618EF501F00FAC851 /* JAMAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JAMAppDelegate.m; sourceTree = "<group>"; };
 		63D2069118EF501F00FAC851 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		723B244C1A52AF75004B7587 /* map_north_1.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = map_north_1.svg; sourceTree = "<group>"; };
 		EB5881DF19D5CE2900797A2E /* Launch.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = Launch.xib; path = ../Launch.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -203,6 +205,7 @@
 				630E28B81A44D8280001106F /* tiger_compressed.svgz */,
 				630E28B61A44D8190001106F /* tiger.svg */,
 				632459431A460A6300C64553 /* fancyButton.svgz */,
+				723B244C1A52AF75004B7587 /* map_north_1.svg */,
 				63D2068518EF501F00FAC851 /* JAMAppDelegate.h */,
 				63D2068618EF501F00FAC851 /* JAMAppDelegate.m */,
 				6380F6891A41110300D7C9B4 /* JAMViewController.h */,
@@ -343,6 +346,7 @@
 				63AD793E1A3FBFF800987249 /* paths-data-17-f.svg in Resources */,
 				63AD79311A3FBFF800987249 /* paths-data-03-f.svg in Resources */,
 				630E28B71A44D8190001106F /* tiger.svg in Resources */,
+				723B244D1A52AF75004B7587 /* map_north_1.svg in Resources */,
 				63AD79321A3FBFF800987249 /* paths-data-04-t.svg in Resources */,
 				63AD79411A3FBFF800987249 /* paths-data-20-f.svg in Resources */,
 				63AD79391A3FBFF800987249 /* paths-data-12-t.svg in Resources */,
