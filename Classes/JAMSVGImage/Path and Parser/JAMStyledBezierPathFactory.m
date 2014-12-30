@@ -75,7 +75,7 @@
         [self saveLinearGradient:attributes];
         return nil;
     }
-   if ([elementName isEqualToString:@"radialGradient"]) {
+    if ([elementName isEqualToString:@"radialGradient"]) {
         [self saveRadialGradient:attributes];
         return nil;
     }
