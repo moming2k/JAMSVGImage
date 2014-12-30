@@ -29,7 +29,7 @@
                        strokeColor:(UIColor *)strokeColor
                           gradient:(JAMSVGGradient *)gradient
                   affineTransforms:(NSArray *)transforms
-                           opacity:(NSNumber *)opacity;
+                           opacity:(NSNumber *)opacity
 {
     JAMStyledBezierPath *styledPath = JAMStyledBezierPath.new;
     

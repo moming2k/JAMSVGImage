@@ -13,7 +13,10 @@
 #import "JAMStyledBezierPathFactory.h"
 #import "JAMStyledBezierPath.h"
 #import "JAMSVGGradientParts.h"
+#import "JAMStyledText.h"
 #import "JAMSVGUtilities.h"
+
+#import <CoreText/CoreText.h>
 
 #pragma mark - Private path properties.
 
@@ -79,6 +82,13 @@
         [self saveRadialGradient:attributes];
         return nil;
     }
+    return nil;
+}
+
+- (JAMStyledText *)styledTextFromElementName:(NSString *)elementName attributes:(NSDictionary *)attributes
+{
+    if ([elementName isEqualToString:@"text"])
+        return [self textWithAttributes:attributes];
     return nil;
 }
 
@@ -242,6 +252,173 @@
     [path addLineToPoint:CGPointMake([attributes floatForKey:@"x2"], [attributes floatForKey:@"y2"])];
 
     return [self createStyledPath:path withAttributes:attributes];
+}
+
+- (JAMStyledText *)textWithAttributes:(NSDictionary *)attributes;
+{
+    NSArray *transforms = nil;
+    if (attributes[@"transform"] || self.affineTransformStack.count > 0) {
+        if (attributes[@"transform"]) {
+            transforms = [self.affineTransformStack arrayByAddingObject:[attributes affineTransformForKey:@"transform"]];
+        } else {
+            transforms = self.affineTransformStack.copy;
+        }
+    }
+    
+    //NSMutableAttributedString *text = NSMutableAttributedString.new;
+    
+    attributes = [self attributesByAddingGroupAttributesToAttributes:attributes];
+    attributes = [self attributesByApplyingStyleAttributeToAttributes:attributes];
+    
+    
+    
+    NSString* actualSize = ((NSString *)attributes[@"font-size"]).lowercaseString;
+    NSString* actualFamily = ((NSString *)attributes[@"font-family"]).lowercaseString;
+    
+    float x = [attributes floatForKey:@"x"];
+    float y = [attributes floatForKey:@"y"];
+    
+    CGFloat effectiveFontSize = (actualSize.length > 0) ? [actualSize floatValue] : 12; // I chose 12. I couldn't find an official "default" value in the SVG spec.
+    /** Convert the size down using the SVG transform at this point, before we calc the frame size etc */
+    //	effectiveFontSize = CGSizeApplyAffineTransform( CGSizeMake(0,effectiveFontSize), textTransformAbsolute ).height; // NB important that we apply a transform to a "CGSize" here, so that Apple's library handles worrying about whether to ignore skew transforms etc
+    
+    /** find a valid font reference, or Apple's APIs will break later */
+    /** undocumented Apple bug: CTFontCreateWithName cannot accept nil input*/
+    CTFontRef font = NULL;
+    if( actualFamily != nil)
+        font = CTFontCreateWithName( (CFStringRef)actualFamily, effectiveFontSize, NULL);
+    if( font == NULL )
+        font = CTFontCreateWithName( (CFStringRef) @"Verdana", effectiveFontSize, NULL); // Spec says to use "whatever default font-family is normal for your system". On iOS, that's Verdana
+    
+    /** Convert all whitespace to spaces, and trim leading/trailing (SVG doesn't support leading/trailing whitespace, and doesnt support CR LF etc) */
+    
+    NSString* effectiveText = @"M, C, S, m, c , s"; // FIXME: this is a TEMPORARY HACK, UNTIL PROPER PARSING OF <TSPAN> ELEMENTS IS ADDED
+    
+    effectiveText = [effectiveText stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    effectiveText = [effectiveText stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
+    
+    /** Calculate
+     
+     1. Create an attributed string (Apple's APIs are hard-coded to require this)
+     2. Set the font to be the correct one + correct size for whole string, inside the string
+     3. Ask apple how big the final thing should be
+     4. Use that to provide a layer.frame
+     */
+    NSMutableAttributedString* tempString = [[NSMutableAttributedString alloc] initWithString:effectiveText];
+    [tempString addAttribute:(NSString *)kCTFontAttributeName
+                       value:(__bridge id)font
+                       range:NSMakeRange(0, tempString.string.length)];
+    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString( (CFMutableAttributedStringRef) tempString );
+    CGSize suggestedUntransformedSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, 0), NULL, CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX), NULL);
+    CFRelease(framesetter);
+    
+    
+    
+    
+    CGRect unTransformedFinalBounds = CGRectMake( 0,
+                                                 0,
+                                                 suggestedUntransformedSize.width,
+                                                 suggestedUntransformedSize.height); // everything's been pre-scaled by [self transformAbsolute]
+    
+    NSString *fillColorString = ((NSString *)attributes[@"fill"]).lowercaseString;
+    NSString *strokeColorString = ((NSString *)attributes[@"stroke"]).lowercaseString;
+    NSString *fillColorStringValue = self.webColors[fillColorString];
+    NSString *strokeColorStringValue = self.webColors[strokeColorString];
+    UIColor *fillColor = fillColorStringValue ? [UIColor colorFromString:fillColorStringValue] : [attributes fillColorForKey:@"fill"];
+    UIColor *strokeColor = strokeColorStringValue ? [UIColor colorFromString:strokeColorStringValue] : [attributes strokeColorForKey:@"stroke"];
+    
+    JAMStyledText *text = [JAMStyledText styledTextWithString:tempString withX:x withY:y fillColor:fillColor strokeColor:strokeColor affineTransforms:transforms opacity:[self opacityFromAttributes:attributes]];
+    
+    
+    //CATextLayer *label = [[CATextLayer alloc] init];
+//    [SVGHelperUtilities configureCALayer:label usingElement:self];
+    
+    //label.font = font; /** WARNING: Apple docs say you "CANNOT" assign a UIFont instance here, for some reason they didn't bridge it with CGFont */
+    //CFRelease(font);
+    
+    /** This is complicated for three reasons.
+     Partly: Apple and SVG use different defitions for the "origin" of a piece of text
+     Partly: Bugs in Apple's CoreText
+     Partly: flaws in Apple's CALayer's handling of frame,bounds,position,anchorPoint,affineTransform
+     
+     1. CALayer.frame DOES NOT EXIST AS A REAL PROPERTY - if you read Apple's docs you eventually realise it is fake. Apple explicitly says it is "not defined". They should DELETE IT from their API!
+     2. CALayer.bounds and .position ARE NOT AFFECTED BY .affineTransform - only the contents of the layer is affected
+     3. SVG defines two SEMI-INCOMPATIBLE ways of positioning TEXT objects, that we have to correctly combine here.
+     4. So ... to apply a transform to the layer text:
+     i. find the TRANSFORM
+     ii. merge it with the local offset (.x and .y from SVG) - which defaults to (0,0)
+     iii. apply that to the layer
+     iv. set the position to 0
+     v. BECAUSE SVG AND APPLE DEFINE ORIGIN DIFFERENTLY: subtract the "untransformed" height of the font ... BUT: pre-transformed ONLY BY the 'multiplying (non-translating)' part of the TRANSFORM.
+     vi. set the bounds to be (whatever Apple's CoreText says is necessary to render TEXT at FONT SIZE, with NO TRANSFORMS)
+     */
+//    label.bounds = unTransformedFinalBounds;
+    
+    /** NB: specific to Apple: the "origin" is the TOP LEFT corner of first line of text, whereas SVG uses the font's internal origin
+     (which is BOTTOM LEFT CORNER OF A LETTER SUCH AS 'a' OR 'x' THAT SITS ON THE BASELINE ... so we have to make the FRAME start "font leading" higher up
+     
+     WARNING: Apple's font-rendering system has some nasty bugs (c.f. StackOverflow)
+     
+     We TRIED to use the font's built-in numbers to correct the position, but Apple's own methods often report incorrect values,
+     and/or Apple has deprecated REQUIRED methods in their API (with no explanation - e.g. "font leading")
+     
+     If/when Apple fixes their bugs - or if you know enough about their API's to workaround the bugs, feel free to fix this code.
+     */
+//    CTLineRef line = CTLineCreateWithAttributedString( (CFMutableAttributedStringRef) tempString );
+//    CGFloat ascent = 0;
+//    CTLineGetTypographicBounds(line, &ascent, NULL, NULL);
+//    CFRelease(line);
+//    CGFloat offsetToConvertSVGOriginToAppleOrigin = -ascent;
+//    CGSize fakeSizeToApplyNonTranslatingPartsOfTransform = CGSizeMake( 0, offsetToConvertSVGOriginToAppleOrigin);
+//    
+//    label.position = CGPointMake( 0,
+//                                 0 );
+//    
+//    NSString *textAnchor = attributes[@"text-anchor"];
+//    if( [@"middle" isEqualToString:textAnchor] )
+//        label.anchorPoint = CGPointMake(0.5, 0.0);
+//    else if( [@"end" isEqualToString:textAnchor] )
+//        label.anchorPoint = CGPointMake(1.0, 0.0);
+//    else
+//        label.anchorPoint = CGPointZero; // WARNING: SVG applies transforms around the top-left as origin, whereas Apple defaults to center as origin, so we tell Apple to work "like SVG" here.
+//    
+//    //label.affineTransform = textTransformAbsoluteWithLocalPositionOffset;
+//    label.fontSize = effectiveFontSize;
+//    label.string = effectiveText;
+//    label.alignmentMode = kCAAlignmentLeft;
+
+    
+    
+    //NSString *fillColorString = ((NSString *)attributes[@"fill"]).lowercaseString;
+    //NSString *strokeColorString = ((NSString *)attributes[@"stroke"]).lowercaseString;
+    
+    // chris
+    //label.foregroundColor = [SVGHelperUtilities parseFillForElement:self];
+//#if TARGET_OS_IPHONE
+//    label.contentsScale = [[UIScreen mainScreen] scale];
+//#endif
+    
+    /** VERY USEFUL when trying to debug text issues:
+     label.backgroundColor = [UIColor colorWithRed:0.5 green:0 blue:0 alpha:0.5].CGColor;
+     label.borderColor = [UIColor redColor].CGColor;
+     //DEBUG: DDLogVerbose(@"font size %2.1f at %@ ... final frame of layer = %@", effectiveFontSize, NSStringFromCGPoint(transformedOrigin), NSStringFromCGRect(label.frame));
+     */
+    
+    return text;
+
+    
+//
+//    
+//
+//
+//    
+//    
+//    
+//    [path moveToPoint:CGPointMake([attributes floatForKey:@"x"], [attributes floatForKey:@"y"])];
+//    
+//    [path addLineToPoint:CGPointMake([attributes floatForKey:@"x2"], [attributes floatForKey:@"y2"])];
+    
+    return nil;// [self createStyledPath:path withAttributes:attributes];
 }
 
 #pragma mark - Styled Path Creation Methods
