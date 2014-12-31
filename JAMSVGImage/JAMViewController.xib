@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6254" systemVersion="14C81f" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6254" systemVersion="14B25" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
@@ -21,10 +21,10 @@
                     <rect key="frame" x="8" y="8" width="584" height="546"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="string" keyPath="svgName" value="tiger_compressed"/>
+                        <userDefinedRuntimeAttribute type="string" keyPath="svgName" value="map_north_1"/>
                     </userDefinedRuntimeAttributes>
                 </view>
-                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="500" minValue="10" maxValue="1000" translatesAutoresizingMaskIntoConstraints="NO" id="6df-D0-F3w">
+                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="500" minValue="10" maxValue="10000" translatesAutoresizingMaskIntoConstraints="NO" id="6df-D0-F3w">
                     <rect key="frame" x="114" y="562" width="480" height="31"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="30" id="KvD-Ru-Dy3"/>

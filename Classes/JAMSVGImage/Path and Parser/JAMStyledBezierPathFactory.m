@@ -13,7 +13,10 @@
 #import "JAMStyledBezierPathFactory.h"
 #import "JAMStyledBezierPath.h"
 #import "JAMSVGGradientParts.h"
+#import "JAMStyledText.h"
 #import "JAMSVGUtilities.h"
+
+#import <CoreText/CoreText.h>
 
 #pragma mark - Private path properties.
 
@@ -75,10 +78,17 @@
         [self saveLinearGradient:attributes];
         return nil;
     }
-   if ([elementName isEqualToString:@"radialGradient"]) {
+    if ([elementName isEqualToString:@"radialGradient"]) {
         [self saveRadialGradient:attributes];
         return nil;
     }
+    return nil;
+}
+
+- (JAMStyledText *)styledTextFromElementName:(NSString *)elementName attributes:(NSDictionary *)attributes
+{
+    if ([elementName isEqualToString:@"text"])
+        return [self textWithAttributes:attributes];
     return nil;
 }
 
@@ -242,6 +252,58 @@
     [path addLineToPoint:CGPointMake([attributes floatForKey:@"x2"], [attributes floatForKey:@"y2"])];
 
     return [self createStyledPath:path withAttributes:attributes];
+}
+
+- (JAMStyledText *)textWithAttributes:(NSDictionary *)attributes;
+{
+    NSArray *transforms = nil;
+    if (attributes[@"transform"] || self.affineTransformStack.count > 0) {
+        if (attributes[@"transform"]) {
+            transforms = [self.affineTransformStack arrayByAddingObject:[attributes affineTransformForKey:@"transform"]];
+        } else {
+            transforms = self.affineTransformStack.copy;
+        }
+    }
+    
+    attributes = [self attributesByAddingGroupAttributesToAttributes:attributes];
+    attributes = [self attributesByApplyingStyleAttributeToAttributes:attributes];
+    
+    NSString* actualSize = ((NSString *)attributes[@"font-size"]).lowercaseString;
+    NSString* actualFamily = ((NSString *)attributes[@"font-family"]).lowercaseString;
+    
+    float x = [attributes floatForKey:@"x"];
+    float y = [attributes floatForKey:@"y"];
+    
+    CGFloat effectiveFontSize = (actualSize.length > 0) ? [actualSize floatValue] : 12;
+    
+    /** find a valid font reference, or Apple's APIs will break later */
+    /** undocumented Apple bug: CTFontCreateWithName cannot accept nil input*/
+    CTFontRef font = NULL;
+    if( actualFamily != nil)
+        font = CTFontCreateWithName( (CFStringRef)actualFamily, effectiveFontSize, NULL);
+    if( font == NULL )
+        font = CTFontCreateWithName( (CFStringRef) @"Verdana", effectiveFontSize, NULL); // Spec says to use "whatever default font-family is normal for your system". On iOS, that's Verdana
+    
+    NSString* effectiveText = @"";
+    
+    NSMutableAttributedString* tempString = [[NSMutableAttributedString alloc] initWithString:effectiveText];
+    [tempString addAttribute:(NSString *)kCTFontAttributeName
+                       value:(__bridge id)font
+                       range:NSMakeRange(0, tempString.string.length)];
+    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString( (CFMutableAttributedStringRef) tempString );
+    CGSize suggestedUntransformedSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, 0), NULL, CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX), NULL);
+    CFRelease(framesetter);
+    
+    NSString *fillColorString = ((NSString *)attributes[@"fill"]).lowercaseString;
+    NSString *strokeColorString = ((NSString *)attributes[@"stroke"]).lowercaseString;
+    NSString *fillColorStringValue = self.webColors[fillColorString];
+    NSString *strokeColorStringValue = self.webColors[strokeColorString];
+    UIColor *fillColor = fillColorStringValue ? [UIColor colorFromString:fillColorStringValue] : [attributes fillColorForKey:@"fill"];
+    UIColor *strokeColor = strokeColorStringValue ? [UIColor colorFromString:strokeColorStringValue] : [attributes strokeColorForKey:@"stroke"];
+    
+    JAMStyledText *text = [JAMStyledText styledTextWithString:tempString withX:x withY:y fillColor:fillColor strokeColor:strokeColor affineTransforms:transforms opacity:[self opacityFromAttributes:attributes]];
+    
+    return text;
 }
 
 #pragma mark - Styled Path Creation Methods
