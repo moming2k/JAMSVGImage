@@ -13,10 +13,21 @@
 #import <UIKit/UIKit.h>
 #import "JAMSVGImage.h"
 
+@protocol TapDetectingImageViewDelegate;
+
 IB_DESIGNABLE
+
+
 
 /** The JAMSVGImageView encapsulates a JAMSVGImage in a UIView. The SVG redraws at every frame/bounds change. */
 @interface JAMSVGImageView : UIView
+{
+    CGPoint tapLocation;         // Needed to record location of single tap, which will only be registered after delayed perform.
+    BOOL multipleTouches;        // YES if a touch event contains more than one touch; reset when all fingers are lifted.
+    BOOL twoFingerTapIsPossible; // Set to NO when 2-finger tap can be ruled out (e.g. 3rd finger down, fingers touch down too far apart, etc).
+}
+
+@property (nonatomic, weak) id <TapDetectingImageViewDelegate> delegate;
 
 /** The name of the svg in your app's main bundle. Mostly used by IBInspectable for Interface Builder previews. */
 @property (nonatomic) IBInspectable NSString *svgName;
@@ -31,3 +42,14 @@ IB_DESIGNABLE
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;
 
 @end
+
+@protocol TapDetectingImageViewDelegate <NSObject>
+
+@optional
+- (void)tapDetectingImageView:(JAMSVGImageView *)view gotSingleTapAtPoint:(CGPoint)tapPoint;
+- (void)tapDetectingImageView:(JAMSVGImageView *)view gotDoubleTapAtPoint:(CGPoint)tapPoint;
+- (void)tapDetectingImageView:(JAMSVGImageView *)view gotTwoFingerTapAtPoint:(CGPoint)tapPoint;
+
+@end
+
+

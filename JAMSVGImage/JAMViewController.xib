@@ -56,7 +56,7 @@
                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cVa-80-bWk">
                     <rect key="frame" x="0.0" y="0.0" width="624" height="463"/>
                     <subviews>
-                        <view contentMode="scaleAspectFit" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4lo-Er-aVK" customClass="TapDetectingImageView">
+                        <view multipleTouchEnabled="YES" contentMode="scaleAspectFit" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4lo-Er-aVK" customClass="JAMSVGImageView">
                             <rect key="frame" x="0.0" y="0.0" width="584" height="546"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             <userDefinedRuntimeAttributes>
@@ -64,6 +64,9 @@
                             </userDefinedRuntimeAttributes>
                         </view>
                     </subviews>
+                    <connections>
+                        <outlet property="delegate" destination="-1" id="j5i-lr-UUz"/>
+                    </connections>
                 </scrollView>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
