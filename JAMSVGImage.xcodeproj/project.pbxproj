@@ -47,6 +47,7 @@
 		63D2068318EF501F00FAC851 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D2068218EF501F00FAC851 /* main.m */; };
 		63D2068718EF501F00FAC851 /* JAMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D2068618EF501F00FAC851 /* JAMAppDelegate.m */; };
 		63D2069218EF501F00FAC851 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63D2069118EF501F00FAC851 /* Images.xcassets */; };
+		7215114F1A5686490095B3A8 /* TapDetectingImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7215114E1A5686490095B3A8 /* TapDetectingImageView.m */; };
 		723B244D1A52AF75004B7587 /* map_north_1.svg in Resources */ = {isa = PBXBuildFile; fileRef = 723B244C1A52AF75004B7587 /* map_north_1.svg */; };
 		723B24501A52D2BC004B7587 /* JAMStyledText.m in Sources */ = {isa = PBXBuildFile; fileRef = 723B244F1A52D2BC004B7587 /* JAMStyledText.m */; };
 		EB5881E019D5CE2900797A2E /* Launch.xib in Resources */ = {isa = PBXBuildFile; fileRef = EB5881DF19D5CE2900797A2E /* Launch.xib */; };
@@ -106,6 +107,8 @@
 		63D2068518EF501F00FAC851 /* JAMAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JAMAppDelegate.h; sourceTree = "<group>"; };
 		63D2068618EF501F00FAC851 /* JAMAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JAMAppDelegate.m; sourceTree = "<group>"; };
 		63D2069118EF501F00FAC851 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		7215114D1A5686490095B3A8 /* TapDetectingImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TapDetectingImageView.h; path = "UI and View/TapDetectingImageView.h"; sourceTree = "<group>"; };
+		7215114E1A5686490095B3A8 /* TapDetectingImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TapDetectingImageView.m; path = "UI and View/TapDetectingImageView.m"; sourceTree = "<group>"; };
 		723B244C1A52AF75004B7587 /* map_north_1.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = map_north_1.svg; sourceTree = "<group>"; };
 		723B244E1A52D2BC004B7587 /* JAMStyledText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JAMStyledText.h; path = "Path and Parser/JAMStyledText.h"; sourceTree = "<group>"; };
 		723B244F1A52D2BC004B7587 /* JAMStyledText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = JAMStyledText.m; path = "Path and Parser/JAMStyledText.m"; sourceTree = "<group>"; };
@@ -248,6 +251,8 @@
 				63A36B3918EF67A300AE444E /* JAMSVGImageView.m */,
 				632459451A461EB200C64553 /* JAMSVGButton.h */,
 				632459461A461EB200C64553 /* JAMSVGButton.m */,
+				7215114D1A5686490095B3A8 /* TapDetectingImageView.h */,
+				7215114E1A5686490095B3A8 /* TapDetectingImageView.m */,
 			);
 			name = "UI and View";
 			sourceTree = "<group>";
@@ -371,6 +376,7 @@
 				63A36B3518EF512F00AE444E /* JAMStyledBezierPathFactory.m in Sources */,
 				63D2068318EF501F00FAC851 /* main.m in Sources */,
 				63CA8DFC1A426F870095ECF3 /* JAMSVGUtilities.m in Sources */,
+				7215114F1A5686490095B3A8 /* TapDetectingImageView.m in Sources */,
 				6380F68C1A41110300D7C9B4 /* JAMViewController.m in Sources */,
 				63A36B3A18EF67A300AE444E /* JAMSVGImageView.m in Sources */,
 				63A36B3618EF512F00AE444E /* JAMSVGImage.m in Sources */,
