@@ -47,7 +47,7 @@
 {
     float ratio = 1.0f * imageSize.width / imageSize.height;
     
-    CGSize finalSize = CGSizeMake(900 , imageSize.height );
+    CGSize finalSize = CGSizeMake(imageSize.height*ratio , imageSize.height );
     return finalSize;
 }
 
