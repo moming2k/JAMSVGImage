@@ -16,8 +16,8 @@
 
 @interface JAMSVGImage ()
 @property (nonatomic, readwrite) CGSize size;
-@property (nonatomic) NSArray *styledPaths;
-@property (nonatomic) CGRect viewBox;
+@property (nonatomic, copy, readwrite) NSArray<JAMStyledBezierPath *> *styledPaths;
+@property (nonatomic, readwrite) CGRect viewBox;
 @end
 
 @implementation JAMSVGImage
@@ -104,6 +104,20 @@ static NSCache *imageCache = nil;
     image.viewBox = parser.viewBox;
     image.scale = 1;
     return image;
+}
+
++ (JAMSVGImage *)imageWithStyledPaths:(NSArray<JAMStyledBezierPath *> *)paths viewBox:(CGRect)viewBox {
+    return [[self alloc] initWithStyledPaths:paths viewBox:viewBox];
+}
+
+- (instancetype)initWithStyledPaths:(NSArray<JAMStyledBezierPath *> *)paths viewBox:(CGRect)viewBox {
+    self = [super init];
+    if (self) {
+        _styledPaths = [paths copy];
+        _viewBox = viewBox;
+        _scale = 1.f;
+    }
+    return self;
 }
 
 - (UIImage *)image;

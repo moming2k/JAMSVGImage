@@ -48,6 +48,16 @@ CGFloat magnitude(CGPoint point)
     return [self rangeOfString:aString].location != NSNotFound;
 }
 
+- (NSArray<NSString *> *)componentsSeparatedByCharactersInString:(NSString *)string {
+    NSCharacterSet *set = [NSCharacterSet characterSetWithCharactersInString:string];
+    return [self componentsSeparatedByCharactersInSet:set];
+}
+
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)set {
+    NSArray *components = [self componentsSeparatedByCharactersInSet:set];
+    return [components componentsJoinedByString:@""];
+}
+
 - (NSString *)stringByTrimmingWhitespace;
 {
     return [self stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];

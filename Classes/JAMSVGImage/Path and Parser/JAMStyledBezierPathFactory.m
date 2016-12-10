@@ -314,17 +314,18 @@
     NSString *strokeColorStringValue = self.webColors[strokeColorString];
     UIColor *fillColor = fillColorStringValue ? [UIColor colorFromString:fillColorStringValue] : [attributes fillColorForKey:@"fill"];
     UIColor *strokeColor = strokeColorStringValue ? [UIColor colorFromString:strokeColorStringValue] : [attributes strokeColorForKey:@"stroke"];
-    CGFloat strokeWidth = [attributes strokeWeightForKey:@"stroke-width"];
     
-    JAMStyledBezierPath *styledPath = [JAMStyledBezierPath styledPathWithPath:[self applyStrokeAttributes:attributes toPath:path]
-                                                                    fillColor:fillColor
-                                                                  strokeColor:strokeColor
-                                                                  strokeWidth: strokeWidth
-                                                                     gradient:[self gradientForFillURL:attributes[@"fill"]]
-                                                             affineTransforms:transforms
-                                                                      opacity:[self opacityFromAttributes:attributes]];
-    
+    JAMStyledBezierPath *styledPath = [JAMStyledBezierPath new];
     styledPath.attributes = attributes;
+    styledPath.identifier = attributes[@"id"];
+    styledPath.path = [self applyStrokeAttributes:attributes toPath:path];
+    styledPath.fillColor = fillColor;
+    styledPath.strokeColor = strokeColor;
+    styledPath.gradient = [self gradientForFillURL:attributes[@"fill"]];
+    styledPath.affineTransforms = transforms;
+    styledPath.opacity = [self opacityFromAttributes:attributes];
+    styledPath.strokeWidth = [attributes strokeWeightForKey:@"stroke-width"];
+    
     return styledPath;
 }
 
