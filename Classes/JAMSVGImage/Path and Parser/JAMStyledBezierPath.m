@@ -13,18 +13,7 @@
 #import "JAMStyledBezierPath.h"
 #import "JAMSVGGradientParts.h"
 
-@interface JAMStyledBezierPath ()
-@property (nonatomic) UIBezierPath *path;
-@property (nonatomic) UIColor *fillColor;
-@property (nonatomic) UIColor *strokeColor;
-@property (nonatomic) JAMSVGGradient *gradient;
-@property (nonatomic) NSArray *affineTransforms;
-@property (nonatomic) NSNumber *opacity;
-@property (nonatomic) CGFloat strokeWidth;
-@end
-
 @implementation JAMStyledBezierPath
-
 
 #pragma mark - NSCoding Methods
 

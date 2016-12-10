@@ -1,6 +1,9 @@
 
 #import "JAMViewController.h"
+#import "JAMStyledBezierPath.h"
+#import "JAMSVGParser.h"
 #import "JAMSVGUtilities.h"
+#import "JAMSVGImage.h"
 
 @implementation UITouch (Utilities)
 
@@ -13,6 +16,21 @@
 @end
 
 @implementation JAMViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"bear" ofType:@"svg"];
+    JAMSVGParser *parser = [[JAMSVGParser alloc] initWithSVGDocument:filePath];
+    [parser parseSVGDocument];
+    NSArray<JAMStyledBezierPath *> *paths = parser.paths;
+    
+    for (JAMStyledBezierPath *path in paths) {
+        NSLog(@"%@",path.attributes);
+    }
+    
+    
+}
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 {

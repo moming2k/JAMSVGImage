@@ -78,6 +78,8 @@
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qualifiedName attributes:(NSDictionary *)attributeDict
 {
+    NSLog(@"%@", elementName);
+    
     if ([elementName isEqualToString:@"svg"]) {
         self.viewBox = [self.pathFactory getViewboxFromAttributes:attributeDict];
         return;
@@ -96,10 +98,15 @@
             [self.pathFactory pushGroupTransformWithAttributes:attributeDict];
         }
     }
+    
     JAMStyledBezierPath *path = [self.pathFactory styledPathFromElementName:elementName attributes:attributeDict];
     if (path) {
         [self.paths addObject:path];
     }
+}
+
+- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string {
+    NSLog(@"%@", string);
 }
 
 - (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName;

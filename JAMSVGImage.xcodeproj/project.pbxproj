@@ -55,6 +55,8 @@
 		63D2068318EF501F00FAC851 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D2068218EF501F00FAC851 /* main.m */; };
 		63D2068718EF501F00FAC851 /* JAMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 63D2068618EF501F00FAC851 /* JAMAppDelegate.m */; };
 		63D2069218EF501F00FAC851 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63D2069118EF501F00FAC851 /* Images.xcassets */; };
+		AC15CF951DFC90BE0058B8CB /* pokeball.svg in Resources */ = {isa = PBXBuildFile; fileRef = AC15CF931DFC90BE0058B8CB /* pokeball.svg */; };
+		AC15CF961DFC90BE0058B8CB /* bear.svg in Resources */ = {isa = PBXBuildFile; fileRef = AC15CF941DFC90BE0058B8CB /* bear.svg */; };
 		EB5881E019D5CE2900797A2E /* Launch.xib in Resources */ = {isa = PBXBuildFile; fileRef = EB5881DF19D5CE2900797A2E /* Launch.xib */; };
 /* End PBXBuildFile section */
 
@@ -121,6 +123,8 @@
 		63D2068518EF501F00FAC851 /* JAMAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JAMAppDelegate.h; sourceTree = "<group>"; };
 		63D2068618EF501F00FAC851 /* JAMAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JAMAppDelegate.m; sourceTree = "<group>"; };
 		63D2069118EF501F00FAC851 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		AC15CF931DFC90BE0058B8CB /* pokeball.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = pokeball.svg; sourceTree = "<group>"; };
+		AC15CF941DFC90BE0058B8CB /* bear.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = bear.svg; sourceTree = "<group>"; };
 		EB5881DF19D5CE2900797A2E /* Launch.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = Launch.xib; path = ../Launch.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -257,6 +261,8 @@
 				631522111A55D89900680632 /* Examples */,
 				63AD79191A3FBFF800987249 /* path conformance test documents */,
 				630E28B81A44D8280001106F /* tiger_compressed.svgz */,
+				AC15CF931DFC90BE0058B8CB /* pokeball.svg */,
+				AC15CF941DFC90BE0058B8CB /* bear.svg */,
 				630E28B61A44D8190001106F /* tiger.svg */,
 				632459431A460A6300C64553 /* fancyButton.svgz */,
 				63D2068518EF501F00FAC851 /* JAMAppDelegate.h */,
@@ -399,9 +405,11 @@
 				EB5881E019D5CE2900797A2E /* Launch.xib in Resources */,
 				63AD793A1A3FBFF800987249 /* paths-data-13-t.svg in Resources */,
 				63AD79341A3FBFF800987249 /* paths-data-06-t.svg in Resources */,
+				AC15CF951DFC90BE0058B8CB /* pokeball.svg in Resources */,
 				630E28B91A44D8280001106F /* tiger_compressed.svgz in Resources */,
 				63AD793B1A3FBFF800987249 /* paths-data-14-t.svg in Resources */,
 				631522261A55DD7600680632 /* apple@3x.jpg in Resources */,
+				AC15CF961DFC90BE0058B8CB /* bear.svg in Resources */,
 				63AD793E1A3FBFF800987249 /* paths-data-17-f.svg in Resources */,
 				63AD79311A3FBFF800987249 /* paths-data-03-f.svg in Resources */,
 				630E28B71A44D8190001106F /* tiger.svg in Resources */,
