@@ -175,7 +175,9 @@ CGFloat magnitude(CGPoint point)
 
 - (void)scanThroughWhitespaceCommasAndClosingParenthesis;
 {
-    [self scanCharactersFromSet:[NSCharacterSet characterSetWithCharactersInString:@" ,)"] intoString:NULL];
+    @autoreleasepool {
+        [self scanCharactersFromSet:[NSCharacterSet characterSetWithCharactersInString:@" ,)"] intoString:NULL];
+    }
 }
 
 - (NSString *)initialCharacter;
@@ -190,20 +192,24 @@ CGFloat magnitude(CGPoint point)
 
 - (void)scanThroughToHyphen;
 {
-    [self scanCharactersFromSet:[NSCharacterSet characterSetWithCharactersInString:@"0123456789.-"].invertedSet intoString:NULL];
+    @autoreleasepool {
+        [self scanCharactersFromSet:[NSCharacterSet characterSetWithCharactersInString:@"0123456789.-"].invertedSet intoString:NULL];
+    }
 }
 
 - (BOOL)scanPoint:(CGPoint *)point;
 {
-    [self scanUpToCharactersFromSet:NSCharacterSet.whitespaceAndNewlineCharacterSet.invertedSet intoString:NULL];
-    float xCoord, yCoord;
-    [self scanThroughToHyphen];
-    BOOL didScanX = [self scanFloat:&xCoord];
-    [self scanThroughToHyphen];
-    BOOL didScanY = [self scanFloat:&yCoord];
-    if (didScanX && didScanY) {
-        *point = CGPointMake(xCoord, yCoord);
-        return YES;
+    @autoreleasepool {
+        [self scanUpToCharactersFromSet:NSCharacterSet.whitespaceAndNewlineCharacterSet.invertedSet intoString:NULL];
+        float xCoord, yCoord;
+        [self scanThroughToHyphen];
+        BOOL didScanX = [self scanFloat:&xCoord];
+        [self scanThroughToHyphen];
+        BOOL didScanY = [self scanFloat:&yCoord];
+        if (didScanX && didScanY) {
+            *point = CGPointMake(xCoord, yCoord);
+            return YES;
+        }
     }
     return NO;
 }
@@ -236,11 +242,13 @@ CGFloat magnitude(CGPoint point)
 
 - (BOOL)scanCGFloat:(CGFloat *)scannedFloat;
 {
-    [self scanUpToCharactersFromSet:NSCharacterSet.whitespaceAndNewlineCharacterSet.invertedSet intoString:NULL];
-    float floatValue;
-    if ([self scanFloat:&floatValue]) {
-        *scannedFloat = (CGFloat)floatValue;
-        return YES;
+    @autoreleasepool {
+        [self scanUpToCharactersFromSet:NSCharacterSet.whitespaceAndNewlineCharacterSet.invertedSet intoString:NULL];
+        float floatValue;
+        if ([self scanFloat:&floatValue]) {
+            *scannedFloat = (CGFloat)floatValue;
+            return YES;
+        }
     }
     return NO;
 }
@@ -284,7 +292,7 @@ CGFloat magnitude(CGPoint point)
 
 - (CGFloat)strokeWeightForKey:(NSString *)key;
 {
-    return self[key] ? [self[key] floatValue] : 1.f;
+    return self[key] ? [self[key] floatValue] : 0.f;
 }
 
 - (CGLineJoin)lineJoinForKey:(NSString *)key;

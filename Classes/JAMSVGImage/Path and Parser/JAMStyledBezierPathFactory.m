@@ -41,6 +41,9 @@
 
 - (JAMStyledBezierPath *)styledPathFromElementName:(NSString *)elementName attributes:(NSDictionary *)attributes;
 {
+    attributes = [self attributesByAddingGroupAttributesToAttributes:attributes];
+    attributes = [self attributesByApplyingStyleAttributeToAttributes:attributes];
+    
     if ([elementName isEqualToString:@"circle"])
         return [self circleWithAttributes:attributes];
     
@@ -304,9 +307,6 @@
             transforms = self.affineTransformStack.copy;
         }
     }
-    
-    attributes = [self attributesByAddingGroupAttributesToAttributes:attributes];
-    attributes = [self attributesByApplyingStyleAttributeToAttributes:attributes];
     
     NSString *fillColorString = ((NSString *)attributes[@"fill"]).lowercaseString;
     NSString *strokeColorString = ((NSString *)attributes[@"stroke"]).lowercaseString;

@@ -15,9 +15,9 @@
 @class JAMSVGGradient;
 
 /** The JAMStyledBezierPath class encapsulates a UIBezierPath object and styling information (fill, stroke, gradient, affine transforms, and opacity.) */
-@interface JAMStyledBezierPath : NSObject <NSCoding>
+@interface JAMStyledBezierPath : NSObject <NSCoding, NSCopying>
 
-@property (nonatomic, copy) NSDictionary *identifier;
+@property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, copy) NSDictionary *attributes;
 
 @property (nonatomic, copy) UIBezierPath *path;

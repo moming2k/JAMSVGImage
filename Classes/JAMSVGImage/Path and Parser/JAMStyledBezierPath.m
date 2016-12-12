@@ -64,6 +64,22 @@
     return styledPath;
 }
 
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+    JAMStyledBezierPath *styledPath = [self.class new];
+    
+    styledPath.attributes = self.attributes;
+    styledPath.identifier = self.identifier;
+    styledPath.path = self.path;
+    styledPath.fillColor = self.fillColor;
+    styledPath.strokeColor = self.strokeColor;
+    styledPath.gradient = self.gradient;
+    styledPath.affineTransforms = self.affineTransforms;
+    styledPath.opacity = self.opacity;
+    styledPath.strokeWidth = self.strokeWidth;
+    
+    return styledPath;
+}
+
 - (void)drawStyledPathInContext:(CGContextRef)context
 {
     if (!context) return;
@@ -84,7 +100,11 @@
     } else if (self.fillColor) {
         CGContextSetFillColorWithColor(context, self.fillColor.CGColor);
         CGContextAddPath(context, self.path.CGPath);
-        CGContextFillPath(context);
+        if (self.path.usesEvenOddFillRule) {
+            CGContextEOFillPath(context);
+        } else {
+            CGContextFillPath(context);
+        }
     }
     if (self.strokeColor && self.path.lineWidth > 0.f) {
         if (self.strokeWidth) {
