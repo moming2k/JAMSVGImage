@@ -21,7 +21,8 @@
     if (!(self = [super init])) { return nil; }
     
     self.identifier = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(identifier))];
-    self.colorStops = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(colorStops))];
+    NSArray *colorStops = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(colorStops))];
+    self.colorStops = [NSMutableArray arrayWithArray:colorStops ?: @[]];
     self.gradientTransform = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(gradientTransform))];
     
     return self;
@@ -46,7 +47,7 @@
 
 - (instancetype)copyWithZone:(__unused NSZone *)zone {
     JAMSVGGradient *gradient = [self.class new];
-    gradient.colorStops = self.colorStops;
+    gradient.colorStops = [self.colorStops mutableCopy];
     gradient.identifier = self.identifier;
     gradient.gradientTransform = self.gradientTransform;
     return gradient;

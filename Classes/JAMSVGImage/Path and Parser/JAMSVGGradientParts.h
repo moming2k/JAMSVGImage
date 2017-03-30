@@ -21,7 +21,7 @@ typedef NS_ENUM(NSInteger, JAMSVGGradientType) {
 /** The SVG Gradient object and its two subtypes */
 @interface JAMSVGGradient : NSObject <NSCoding, NSCopying>
 @property (nonatomic, copy) NSString *identifier;
-@property (nonatomic, copy) NSMutableArray *colorStops;
+@property (nonatomic, strong) NSMutableArray *colorStops;
 @property (nonatomic, copy) NSValue *gradientTransform;
 
 - (JAMSVGGradientType)gradientType;
