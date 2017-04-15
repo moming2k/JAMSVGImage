@@ -105,6 +105,12 @@
             [self.pathFactory pushGroupTransformWithAttributes:attributeDict];
         }
     }
+    if ([elementName isEqualToString:@"text"]) {
+        NSLog(@"text");
+        temp_text = [self.pathFactory styledTextFromElementName:elementName attributes:attributeDict];
+        elementContentString = [[NSMutableString alloc] initWithString:@""];
+        capture_text_content = true;
+    }
     
     NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithDictionary:attributeDict];
     
@@ -119,9 +125,7 @@
     if (path) {
         [self.paths addObject:path];
     }
-    temp_text = [self.pathFactory styledTextFromElementName:elementName attributes:attributeDict];
-    elementContentString = nil;
-    capture_text_content = true;
+    
 }
 
 //- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string{
@@ -136,6 +140,14 @@
 //}
 
 - (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string {
+    if (capture_text_content)
+    {
+        if(!elementContentString)
+            elementContentString = [[NSMutableString alloc] initWithString:string];
+        else
+            [elementContentString appendString:string];
+    }
+    
     if (!self.styleClassesParsing) return;
         
     string = [string stringByRemovingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
@@ -152,13 +164,7 @@
             }
         }
     }
-    if (capture_text_content)
-    {
-        if(!elementContentString)
-            elementContentString = [[NSMutableString alloc] initWithString:string];
-        else
-            [elementContentString appendString:string];
-    }
+    
 }
 
 - (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName;
