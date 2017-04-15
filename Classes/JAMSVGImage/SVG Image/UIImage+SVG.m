@@ -10,25 +10,31 @@
  
  */
 
-#import <UIKit/UIKit.h>
+#import "UIImage+SVG.h"
+#import "JAMSVGImage.h"
 
-@class JAMSVGGradient;
+@implementation UIImage (SVG)
 
-/** The JAMStyledBezierPath class encapsulates a UIBezierPath object and styling information (fill, stroke, gradient, affine transforms, and opacity.) */
-@interface JAMStyledBezierPath : NSObject <NSCoding>
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName;
+{
+    return [JAMSVGImage imageNamed:svgName].image;
+}
 
-/** Styled path creation */
-+ (instancetype)styledPathWithPath:(UIBezierPath *)path
-                         fillColor:(UIColor *)fillColor
-                       strokeColor:(UIColor *)strokeColor
-                          gradient:(JAMSVGGradient *)gradient
-                  affineTransforms:(NSArray *)transforms
-                           opacity:(NSNumber *)opacity;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName inBundle:(NSBundle *)bundle
+{
+    return [JAMSVGImage imageNamed:svgName inBundle:bundle].image;
+}
 
-/** Draws the styled path in the current graphics context. */
-- (void)drawStyledPathInContext:(CGContextRef)context;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName atSize:(CGSize)size;
+{
+    return [[JAMSVGImage imageNamed:svgName] imageAtSize:size];
+}
 
-/** Returns a Boolean value indicating whether the area enclosed by the path contains the specified point. */
-- (BOOL)containsPoint:(CGPoint)point;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName atScale:(CGFloat)scale;
+{
+    JAMSVGImage *svgImage = [JAMSVGImage imageNamed:svgName];
+    svgImage.scale = scale;
+    return svgImage.image;
+}
 
 @end

@@ -12,23 +12,13 @@
 
 #import <UIKit/UIKit.h>
 
-@class JAMSVGGradient;
+/** Category on UIImage for convenient creation of images from SVGs at arbitrary sizes and scales. */
 
-/** The JAMStyledBezierPath class encapsulates a UIBezierPath object and styling information (fill, stroke, gradient, affine transforms, and opacity.) */
-@interface JAMStyledBezierPath : NSObject <NSCoding>
+@interface UIImage (SVG)
 
-/** Styled path creation */
-+ (instancetype)styledPathWithPath:(UIBezierPath *)path
-                         fillColor:(UIColor *)fillColor
-                       strokeColor:(UIColor *)strokeColor
-                          gradient:(JAMSVGGradient *)gradient
-                  affineTransforms:(NSArray *)transforms
-                           opacity:(NSNumber *)opacity;
-
-/** Draws the styled path in the current graphics context. */
-- (void)drawStyledPathInContext:(CGContextRef)context;
-
-/** Returns a Boolean value indicating whether the area enclosed by the path contains the specified point. */
-- (BOOL)containsPoint:(CGPoint)point;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName inBundle:(NSBundle *)bundle;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName atSize:(CGSize)size;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName atScale:(CGFloat)scale;
 
 @end
