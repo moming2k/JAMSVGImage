@@ -20,15 +20,6 @@
 
 #pragma mark - Private path properties.
 
-@interface JAMStyledBezierPath (Private)
-@property (nonatomic) UIBezierPath *path;
-@property (nonatomic) UIColor *fillColor;
-@property (nonatomic) UIColor *strokeColor;
-@property (nonatomic) JAMSVGGradient *gradient;
-@property (nonatomic) NSValue *transform;
-@property (nonatomic) NSNumber *opacity;
-@end
-
 @interface JAMStyledBezierPathFactory ()
 @property (nonatomic) NSMutableArray *gradients;
 @property CGPoint previousCurveOperationControlPoint;
@@ -53,6 +44,9 @@
 
 - (JAMStyledBezierPath *)styledPathFromElementName:(NSString *)elementName attributes:(NSDictionary *)attributes;
 {
+    attributes = [self attributesByAddingGroupAttributesToAttributes:attributes];
+    attributes = [self attributesByApplyingStyleAttributeToAttributes:attributes];
+    
     if ([elementName isEqualToString:@"circle"])
         return [self circleWithAttributes:attributes];
     
@@ -96,7 +90,19 @@
 {
     JAMSVGGradientColorStop *colorStop = JAMSVGGradientColorStop.new;
     colorStop.position = [attributes floatForKey:@"offset"];
-    colorStop.color = [self parseStyleColor:attributes[@"style"]];
+    if (colorStop.position > 1) {
+        colorStop.position /= 100.f;
+    }
+    UIColor *stopColor;
+    if (attributes[@"stop-color"]) {
+        stopColor = [UIColor colorFromString:attributes[@"stop-color"]];
+        if (attributes[@"stop-opacity"]) {
+            stopColor = [stopColor colorWithAlphaComponent:[attributes[@"stop-opacity"] floatValue]];
+        }
+    } else if (attributes[@"style"]) {
+        stopColor = [self parseStyleColor:attributes[@"style"]];
+    }
+    colorStop.color = stopColor;
     [((JAMSVGGradient *)self.gradients.lastObject).colorStops addObject:colorStop];
 }
 
@@ -354,8 +360,7 @@
     return appliedAttributes.copy;
 }
 
-- (JAMStyledBezierPath *)createStyledPath:(UIBezierPath *)path withAttributes:(NSDictionary *)attributes;
-{
+- (JAMStyledBezierPath *)createStyledPath:(UIBezierPath *)path withAttributes:(NSDictionary *)attributes; {
     NSArray *transforms = nil;
     if (attributes[@"transform"] || self.affineTransformStack.count > 0) {
         if (attributes[@"transform"]) {
@@ -364,8 +369,6 @@
             transforms = self.affineTransformStack.copy;
         }
     }
-    attributes = [self attributesByAddingGroupAttributesToAttributes:attributes];
-    attributes = [self attributesByApplyingStyleAttributeToAttributes:attributes];
     
     NSString *fillColorString = ((NSString *)attributes[@"fill"]).lowercaseString;
     NSString *strokeColorString = ((NSString *)attributes[@"stroke"]).lowercaseString;
@@ -374,12 +377,18 @@
     UIColor *fillColor = fillColorStringValue ? [UIColor colorFromString:fillColorStringValue] : [attributes fillColorForKey:@"fill"];
     UIColor *strokeColor = strokeColorStringValue ? [UIColor colorFromString:strokeColorStringValue] : [attributes strokeColorForKey:@"stroke"];
     
-    return [JAMStyledBezierPath styledPathWithPath:[self applyStrokeAttributes:attributes toPath:path]
-                                         fillColor:fillColor
-                                       strokeColor:strokeColor
-                                          gradient:[self gradientForFillURL:attributes[@"fill"]]
-                                  affineTransforms:transforms
-                                           opacity:[self opacityFromAttributes:attributes]];
+    JAMStyledBezierPath *styledPath = [JAMStyledBezierPath new];
+    styledPath.attributes = attributes;
+    styledPath.identifier = attributes[@"id"];
+    styledPath.path = [self applyStrokeAttributes:attributes toPath:path];
+    styledPath.fillColor = fillColor;
+    styledPath.strokeColor = strokeColor;
+    styledPath.gradient = [self gradientForFillURL:attributes[@"fill"]];
+    styledPath.affineTransforms = transforms;
+    styledPath.opacity = [self opacityFromAttributes:attributes];
+    styledPath.strokeWidth = [attributes strokeWeightForKey:@"stroke-width"];
+    
+    return styledPath;
 }
 
 - (UIBezierPath *)applyStrokeAttributes:(NSDictionary *)attributes toPath:(UIBezierPath *)path;
@@ -460,10 +469,21 @@
 - (NSArray *)commandListForPolylineString:(NSString *)polylineString;
 {
     NSMutableArray *commandList = NSMutableArray.new;
-    [[polylineString componentsSeparatedByString:@" "] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([(NSString *)obj isEqualToString:@""]) return;
-        [commandList addObject:[NSString stringWithFormat: (commandList.count == 0) ? @"M%@" : @"L%@", obj]];
-    }];
+
+    NSScanner *scanner = [NSScanner scannerWithString:polylineString];
+    while(!scanner.atEnd) {
+        float x = 0, y = 0;
+        BOOL didScanX = [scanner scanFloatAndAdvance:&x];
+        BOOL didScanY = [scanner scanFloatAndAdvance:&y];
+
+        if(didScanX && didScanY) {
+            char commandChar = commandList.count == 0 ? 'M' : 'L';
+            NSString *commandString = [NSString stringWithFormat:@"%c%f,%f", commandChar, x, y];
+            [commandList addObject:commandString];
+         } else {
+             break;
+         }
+    }
     return commandList;
 }
 

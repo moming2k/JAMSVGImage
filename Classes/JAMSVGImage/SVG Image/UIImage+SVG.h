@@ -12,36 +12,13 @@
 
 #import <UIKit/UIKit.h>
 
-typedef NS_ENUM(NSInteger, JAMSVGGradientType) {
-    JAMSVGGradientTypeUnknown = -1,
-    JAMSVGGradientTypeLinear,
-    JAMSVGGradientTypeRadial
-};
+/** Category on UIImage for convenient creation of images from SVGs at arbitrary sizes and scales. */
 
-/** The SVG Gradient object and its two subtypes */
-@interface JAMSVGGradient : NSObject <NSCoding, NSCopying>
-@property (nonatomic, copy) NSString *identifier;
-@property (nonatomic, strong) NSMutableArray *colorStops;
-@property (nonatomic, copy) NSValue *gradientTransform;
+@interface UIImage (SVG)
 
-- (JAMSVGGradientType)gradientType;
-- (void)drawInContext:(CGContextRef)context;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName inBundle:(NSBundle *)bundle;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName atSize:(CGSize)size;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName atScale:(CGFloat)scale;
 
-@end
-
-@interface JAMSVGLinearGradient : JAMSVGGradient
-@property CGPoint startPosition;
-@property CGPoint endPosition;
-@end
-
-@interface JAMSVGRadialGradient : JAMSVGGradient
-@property CGPoint position;
-@property CGFloat radius;
-@end
-
-/** ColorStop wraps up a color and position. */
-@interface JAMSVGGradientColorStop : NSObject <NSCoding, NSCopying>
-- (id)initWithColor:(UIColor *)color position:(CGFloat)position;
-@property (nonatomic, copy) UIColor *color;
-@property CGFloat position;
 @end

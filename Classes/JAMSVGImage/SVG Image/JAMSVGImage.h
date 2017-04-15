@@ -12,8 +12,13 @@
 
 #import <UIKit/UIKit.h>
 
+@class JAMStyledBezierPath;
+
 /** JAMSVGImage class is used for drawing resolution-independent vector graphics from an SVG file or data. Use JAMSVGImage to draw in any graphics context (most likely your custom view's drawRect: method) or, use it to populate a JAMSVGImageView and enjoy resolution-independent graphics at any size anywhere in your app! */
-@interface JAMSVGImage : NSObject
+@interface JAMSVGImage : NSObject <NSCoding>
+
+@property (nonatomic, copy, readonly) NSArray<JAMStyledBezierPath *> *styledPaths;
+@property (nonatomic, readonly) CGRect viewBox;
 
 /** Size of the SVG image, in points. This reflects the size of the 'viewBox' element of the SVG document. */
 @property (nonatomic, readonly) CGSize size;
@@ -22,15 +27,23 @@
 @property (nonatomic) CGFloat scale;
 
 /** Returns a CGImageRef or UIImage of the SVG image at the current scale. */
-@property (nonatomic, readonly) CGImageRef CGImage;
-@property (nonatomic, readonly) UIImage *image;
+- (CGImageRef)CGImage;
+- (UIImage *)image;
 
 /** Initializes a new SVG image from a file or data source. */
 + (JAMSVGImage *)imageNamed:(NSString *)name;
++ (JAMSVGImage *)imageNamed:(NSString *)name inBundle:(NSBundle *)bundle;
 + (JAMSVGImage *)imageWithContentsOfFile:(NSString *)path;
 + (JAMSVGImage *)imageWithSVGData:(NSData *)svgData;
++ (JAMSVGImage *)imageWithStyledPaths:(NSArray<JAMStyledBezierPath *> *)paths viewBox:(CGRect)viewBox;
 
-/** Draws the SVG image either in the current context, or at a specific point, or in a specific rect. */
+- (instancetype)initWithStyledPaths:(NSArray<JAMStyledBezierPath *> *)paths viewBox:(CGRect)viewBox;
+
+/** Draws the SVG image either in the context, or at a specific point, or in a specific rect. */
+- (void)drawInContext:(CGContextRef)context;
+- (void)drawAtPoint:(CGPoint)point inContext:(CGContextRef)context;
+- (void)drawInRect:(CGRect)rect inContext:(CGContextRef)context;
+
 - (void)drawInCurrentContext;
 - (void)drawAtPoint:(CGPoint)point;
 - (void)drawInRect:(CGRect)rect;

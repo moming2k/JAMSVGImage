@@ -10,38 +10,31 @@
  
  */
 
-#import <UIKit/UIKit.h>
+#import "UIImage+SVG.h"
+#import "JAMSVGImage.h"
 
-typedef NS_ENUM(NSInteger, JAMSVGGradientType) {
-    JAMSVGGradientTypeUnknown = -1,
-    JAMSVGGradientTypeLinear,
-    JAMSVGGradientTypeRadial
-};
+@implementation UIImage (SVG)
 
-/** The SVG Gradient object and its two subtypes */
-@interface JAMSVGGradient : NSObject <NSCoding, NSCopying>
-@property (nonatomic, copy) NSString *identifier;
-@property (nonatomic, strong) NSMutableArray *colorStops;
-@property (nonatomic, copy) NSValue *gradientTransform;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName;
+{
+    return [JAMSVGImage imageNamed:svgName].image;
+}
 
-- (JAMSVGGradientType)gradientType;
-- (void)drawInContext:(CGContextRef)context;
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName inBundle:(NSBundle *)bundle
+{
+    return [JAMSVGImage imageNamed:svgName inBundle:bundle].image;
+}
 
-@end
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName atSize:(CGSize)size;
+{
+    return [[JAMSVGImage imageNamed:svgName] imageAtSize:size];
+}
 
-@interface JAMSVGLinearGradient : JAMSVGGradient
-@property CGPoint startPosition;
-@property CGPoint endPosition;
-@end
++ (UIImage *)imageFromSVGNamed:(NSString *)svgName atScale:(CGFloat)scale;
+{
+    JAMSVGImage *svgImage = [JAMSVGImage imageNamed:svgName];
+    svgImage.scale = scale;
+    return svgImage.image;
+}
 
-@interface JAMSVGRadialGradient : JAMSVGGradient
-@property CGPoint position;
-@property CGFloat radius;
-@end
-
-/** ColorStop wraps up a color and position. */
-@interface JAMSVGGradientColorStop : NSObject <NSCoding, NSCopying>
-- (id)initWithColor:(UIColor *)color position:(CGFloat)position;
-@property (nonatomic, copy) UIColor *color;
-@property CGFloat position;
 @end

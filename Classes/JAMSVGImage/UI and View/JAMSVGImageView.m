@@ -43,12 +43,27 @@
     }
 }
 
+- (void)setSvgImage:(JAMSVGImage *)svgImage
+{
+    if (_svgImage != svgImage) {
+        _svgImage = svgImage;
+        [self setNeedsDisplay];
+    }
+}
+
 - (void)layoutSubviews;
 {
     [self setNeedsDisplay];
+    [super layoutSubviews];
 }
 
 - (void)drawRect:(CGRect)rect
+{
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    [self.svgImage drawInRect:[self destinationRectForRect:rect] inContext:context];
+}
+
+- (CGRect)destinationRectForRect:(CGRect)rect;
 {
     CGRect destinationRect = CGRectZero;
     CGFloat scalingFactor = 1.f;
@@ -120,7 +135,7 @@
             destinationRect = rect;
             break;
     }
-    [self.svgImage drawInRect:destinationRect];
+    return destinationRect;
 }
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;

@@ -13,20 +13,40 @@
 #import "JAMStyledBezierPath.h"
 #import "JAMSVGGradientParts.h"
 
-@interface JAMStyledBezierPath ()
-@property (nonatomic) UIBezierPath *path;
-@property (nonatomic) UIColor *fillColor;
-@property (nonatomic) UIColor *strokeColor;
-@property (nonatomic) JAMSVGGradient *gradient;
-@property (nonatomic) NSArray *affineTransforms;
-@property (nonatomic) NSNumber *opacity;
-@end
-
 @implementation JAMStyledBezierPath
+
+#pragma mark - NSCoding Methods
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder;
+{
+    if (!(self = [super init])) { return nil; }
+    
+    self.path = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(path))];
+    self.fillColor = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(fillColor))];
+    self.strokeColor = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(strokeColor))];
+    self.gradient = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(gradient))];
+    self.affineTransforms = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(affineTransforms))];
+    self.opacity = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(opacity))];
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder;
+{
+    [aCoder encodeObject:self.path forKey:NSStringFromSelector(@selector(path))];
+    [aCoder encodeObject:self.fillColor forKey:NSStringFromSelector(@selector(fillColor))];
+    [aCoder encodeObject:self.strokeColor forKey:NSStringFromSelector(@selector(strokeColor))];
+    [aCoder encodeObject:self.gradient forKey:NSStringFromSelector(@selector(gradient))];
+    [aCoder encodeObject:self.affineTransforms forKey:NSStringFromSelector(@selector(affineTransforms))];
+    [aCoder encodeObject:self.opacity forKey:NSStringFromSelector(@selector(opacity))];
+}
+
+#pragma mark - Initializers
 
 + (instancetype)styledPathWithPath:(UIBezierPath *)path
                          fillColor:(UIColor *)fillColor
                        strokeColor:(UIColor *)strokeColor
+                        strokeWidth:(CGFloat)strokeWidth
                           gradient:(JAMSVGGradient *)gradient
                   affineTransforms:(NSArray *)transforms
                            opacity:(NSNumber *)opacity
@@ -39,13 +59,29 @@
     styledPath.gradient = gradient;
     styledPath.affineTransforms = transforms;
     styledPath.opacity = opacity;
+    styledPath.strokeWidth = strokeWidth;
     
     return styledPath;
 }
 
-- (void)drawStyledPath;
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+    JAMStyledBezierPath *styledPath = [self.class new];
+    
+    styledPath.attributes = self.attributes;
+    styledPath.identifier = self.identifier;
+    styledPath.path = self.path;
+    styledPath.fillColor = self.fillColor;
+    styledPath.strokeColor = self.strokeColor;
+    styledPath.gradient = self.gradient;
+    styledPath.affineTransforms = self.affineTransforms;
+    styledPath.opacity = self.opacity;
+    styledPath.strokeWidth = self.strokeWidth;
+    
+    return styledPath;
+}
+
+- (void)drawStyledPathInContext:(CGContextRef)context
 {
-    CGContextRef context = UIGraphicsGetCurrentContext();
     if (!context) return;
 
     CGContextSaveGState(context);
@@ -56,48 +92,41 @@
         CGContextSetAlpha(context, self.opacity.floatValue);
     }
     if (self.gradient) {
-        [self fillWithGradient];
+        CGContextSaveGState(context);
+        CGContextAddPath(context, self.path.CGPath);
+        CGContextClip(context);
+        [self.gradient drawInContext:context];
+        CGContextRestoreGState(context);
     } else if (self.fillColor) {
-        [self.fillColor setFill];
-        [self.path fill];
+        CGContextSetFillColorWithColor(context, self.fillColor.CGColor);
+        CGContextAddPath(context, self.path.CGPath);
+        if (self.path.usesEvenOddFillRule) {
+            CGContextEOFillPath(context);
+        } else {
+            CGContextFillPath(context);
+        }
     }
     if (self.strokeColor && self.path.lineWidth > 0.f) {
-        [self.strokeColor setStroke];
-        [self.path stroke];
+        if (self.strokeWidth) {
+          CGContextSetLineWidth(context, self.strokeWidth);
+        }
+        CGContextSetStrokeColorWithColor(context, self.strokeColor.CGColor);
+        CGContextSetLineWidth(context, self.path.lineWidth);
+        CGContextSetLineJoin(context, self.path.lineJoinStyle);
+        CGContextSetLineCap(context, self.path.lineCapStyle);
+        
+        NSInteger lineDashCount = 0;
+        [self.path getLineDash:NULL count:&lineDashCount phase:NULL];
+        if (lineDashCount > 0) {
+            CGFloat *dashArr = malloc(lineDashCount * sizeof(CGFloat));
+            [self.path getLineDash:dashArr count:NULL phase:NULL];
+            CGContextSetLineDash(context, 0, dashArr, lineDashCount);
+        }
+        
+        CGContextAddPath(context, self.path.CGPath);
+        CGContextStrokePath(context);
     }
     CGContextRestoreGState(context);
-}
-
-- (void)fillWithGradient;
-{
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    NSMutableArray *colors = NSMutableArray.new;
-    CGFloat locations[self.gradient.colorStops.count];
-    for (JAMSVGGradientColorStop *stop in self.gradient.colorStops) {
-        [colors addObject:(id)stop.color.CGColor];
-        CGFloat location = ((JAMSVGGradientColorStop *)self.gradient.colorStops[[self.gradient.colorStops indexOfObject:stop]]).position;
-        locations[[self.gradient.colorStops indexOfObject:stop]] = location;
-    }
-    CGGradientRef gradient = CGGradientCreateWithColors(colorSpace, (__bridge CFMutableArrayRef)colors, locations);
-    
-    CGContextSaveGState(context);
-    [self.path addClip];
-    
-    if (self.gradient.gradientTransform) {
-        CGContextConcatCTM(context, self.gradient.gradientTransform.CGAffineTransformValue);
-    }
-
-    if (self.gradient.gradientType == JAMSVGGradientTypeRadial) {
-        JAMSVGRadialGradient *radialGradient = (JAMSVGRadialGradient *)self.gradient;
-        CGContextDrawRadialGradient(context, gradient, radialGradient.position, 0.f, radialGradient.position, radialGradient.radius, kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
-    } else if (self.gradient.gradientType == JAMSVGGradientTypeLinear) {
-        JAMSVGLinearGradient *linearGradient = (JAMSVGLinearGradient *)self.gradient;
-        CGContextDrawLinearGradient(context, gradient, linearGradient.startPosition, linearGradient.endPosition, kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
-    }
-    CGContextRestoreGState(UIGraphicsGetCurrentContext());
-    CGColorSpaceRelease(colorSpace);
-    CGGradientRelease(gradient);
 }
 
 - (BOOL)containsPoint:(CGPoint)point;

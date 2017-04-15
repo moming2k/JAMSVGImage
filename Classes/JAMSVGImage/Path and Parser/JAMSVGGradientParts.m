@@ -14,12 +14,43 @@
 
 @implementation JAMSVGGradient
 
+#pragma mark - NSCoding Methods
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder;
+{
+    if (!(self = [super init])) { return nil; }
+    
+    self.identifier = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(identifier))];
+    NSArray *colorStops = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(colorStops))];
+    self.colorStops = [NSMutableArray arrayWithArray:colorStops ?: @[]];
+    self.gradientTransform = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(gradientTransform))];
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder;
+{
+    [aCoder encodeObject:self.identifier forKey:NSStringFromSelector(@selector(identifier))];
+    [aCoder encodeObject:self.colorStops forKey:NSStringFromSelector(@selector(colorStops))];
+    [aCoder encodeObject:self.gradientTransform forKey:NSStringFromSelector(@selector(gradientTransform))];
+}
+
+#pragma mark - Initializers
+
 - (id)init;
 {
     if (!(self = [super init])) return nil;
     
     self.colorStops = NSMutableArray.new;
     return self;
+}
+
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+    JAMSVGGradient *gradient = [self.class new];
+    gradient.colorStops = [self.colorStops mutableCopy];
+    gradient.identifier = self.identifier;
+    gradient.gradientTransform = self.gradientTransform;
+    return gradient;
 }
 
 - (JAMSVGGradientType)gradientType;
@@ -33,23 +64,89 @@
     return JAMSVGGradientTypeUnknown;
 }
 
+- (void)drawInContext:(CGContextRef)context
+{
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    NSMutableArray *colors = NSMutableArray.new;
+    CGFloat locations[self.colorStops.count];
+    for (JAMSVGGradientColorStop *stop in self.colorStops) {
+        [colors addObject:(id)stop.color.CGColor];
+        CGFloat location = ((JAMSVGGradientColorStop *)self.colorStops[[self.colorStops indexOfObject:stop]]).position;
+        locations[[self.colorStops indexOfObject:stop]] = location;
+    }
+    CGGradientRef gradient = CGGradientCreateWithColors(colorSpace, (__bridge CFMutableArrayRef)colors, locations);
+    
+    if (self.gradientTransform) {
+        CGContextConcatCTM(context, self.gradientTransform.CGAffineTransformValue);
+    }
+    
+    if (self.gradientType == JAMSVGGradientTypeRadial) {
+        JAMSVGRadialGradient *radialGradient = (JAMSVGRadialGradient *)self;
+        CGContextDrawRadialGradient(context, gradient, radialGradient.position, 0.f, radialGradient.position, radialGradient.radius, kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
+    } else if (self.gradientType == JAMSVGGradientTypeLinear) {
+        JAMSVGLinearGradient *linearGradient = (JAMSVGLinearGradient *)self;
+        CGContextDrawLinearGradient(context, gradient, linearGradient.startPosition, linearGradient.endPosition, kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
+    }
+    CGColorSpaceRelease(colorSpace);
+    CGGradientRelease(gradient);
+}
+
 @end
 
 @implementation JAMSVGLinearGradient
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    JAMSVGLinearGradient *gradient = [super copyWithZone:zone];
+    gradient.startPosition = self.startPosition;
+    gradient.endPosition = self.endPosition;
+    return gradient;
+}
+
 @end
 
 @implementation JAMSVGRadialGradient
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    JAMSVGRadialGradient *gradient = [super copyWithZone:zone];
+    gradient.position = self.position;
+    gradient.radius = self.radius;
+    return gradient;
+}
+
 @end
 
 @implementation JAMSVGGradientColorStop
+
+#pragma mark - NSCoding Methods
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder;
+{
+    if (!(self = [super init])) { return nil; }
+    
+    self.color = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(color))];
+    self.position = [aDecoder decodeFloatForKey:NSStringFromSelector(@selector(position))];
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder;
+{
+    [aCoder encodeObject:self.color forKey:NSStringFromSelector(@selector(color))];
+    [aCoder encodeFloat:self.position forKey:NSStringFromSelector(@selector(position))];
+}
+
 
 - (id)initWithColor:(UIColor *)color position:(CGFloat)position;
 {
     if (!(self = [super init])) return nil;
     
-    self.color = color;
-    self.position = position;
+    _color = [color copy];
+    _position = position;
     return self;
+}
+
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+    return [[JAMSVGGradientColorStop alloc] initWithColor:self.color position:self.position];
 }
 
 @end

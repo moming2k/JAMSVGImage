@@ -17,11 +17,36 @@
 
 @interface JAMSVGImage ()
 @property (nonatomic) NSArray *styledPaths;
-@property (nonatomic) NSArray *styledTexts;
 @property (nonatomic) CGRect viewBox;
 @end
 
 @implementation JAMSVGImage
+
+static NSCache *imageCache = nil;
+
+#pragma mark - NSCoding Methods
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder;
+{
+    if (!(self = [super init])) { return nil; }
+    
+    self.size = [aDecoder decodeCGSizeForKey:NSStringFromSelector(@selector(size))];
+    self.scale = [aDecoder decodeFloatForKey:NSStringFromSelector(@selector(scale))];
+    self.styledPaths = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(styledPaths))];
+    self.viewBox = [aDecoder decodeCGRectForKey:NSStringFromSelector(@selector(viewBox))];
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder;
+{
+    [aCoder encodeCGSize:self.size forKey:NSStringFromSelector(@selector(size))];
+    [aCoder encodeFloat:self.scale forKey:NSStringFromSelector(@selector(scale))];
+    [aCoder encodeObject:self.styledPaths forKey:NSStringFromSelector(@selector(styledPaths))];
+    [aCoder encodeCGRect:self.viewBox forKey:NSStringFromSelector(@selector(viewBox))];
+}
+
+#pragma mark - Initializers
 
 + (JAMSVGImage *)imageNamed:(NSString *)name;
 {
@@ -31,11 +56,28 @@
 #else
     bundle = [NSBundle bundleForClass:self.class];
 #endif
+    return [self imageNamed:name inBundle:bundle];
+}
+
++ (JAMSVGImage *)imageNamed:(NSString *)name inBundle:(NSBundle *)bundle
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        imageCache = [[NSCache alloc] init];
+    });
+    
     NSString *fileName = [bundle pathForResource:name ofType:@"svg"];
     if (!fileName) {
         fileName = [bundle pathForResource:name ofType:@"svgz"];
     }
-    return [JAMSVGImage imageWithContentsOfFile:fileName];
+    
+    JAMSVGImage *image = [imageCache objectForKey:fileName];
+    if (!image) {
+        image = [JAMSVGImage imageWithContentsOfFile:fileName];
+        [imageCache setObject:image forKey:fileName];
+    }
+    
+    return image;
 }
 
 + (JAMSVGImage *)imageWithContentsOfFile:(NSString *)path;
@@ -66,11 +108,26 @@
     return image;
 }
 
++ (JAMSVGImage *)imageWithStyledPaths:(NSArray<JAMStyledBezierPath *> *)paths viewBox:(CGRect)viewBox {
+    return [[self alloc] initWithStyledPaths:paths viewBox:viewBox];
+}
+
+- (instancetype)initWithStyledPaths:(NSArray<JAMStyledBezierPath *> *)paths viewBox:(CGRect)viewBox {
+    self = [super init];
+    if (self) {
+        _styledPaths = [paths copy];
+        _viewBox = viewBox;
+        _scale = 1.f;
+    }
+    return self;
+}
+
 - (UIImage *)image;
 {
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(self.size.width * self.scale,
                                                       self.size.height * self.scale), NO, 0.f);
-    [self drawInCurrentContext];
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    [self drawInContext:context];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return image;
@@ -86,14 +143,26 @@
     return self.image.CGImage;
 }
 
-- (void)drawInCurrentContext;
+- (void)drawInCurrentContext
 {
-    CGContextRef context = UIGraphicsGetCurrentContext();
+    [self drawInContext:UIGraphicsGetCurrentContext()];
+}
+- (void)drawAtPoint:(CGPoint)point
+{
+    [self drawAtPoint:point inContext:UIGraphicsGetCurrentContext()];
+}
+- (void)drawInRect:(CGRect)rect
+{
+    [self drawInRect:rect inContext:UIGraphicsGetCurrentContext()];
+}
+
+- (void)drawInContext:(CGContextRef)context
+{
     CGContextSaveGState(context);
     CGContextTranslateCTM(context, -self.viewBox.origin.x, -self.viewBox.origin.y);
     CGContextScaleCTM(context, self.scale, self.scale);
     for (JAMStyledBezierPath *styledPath in self.styledPaths) {
-        [styledPath drawStyledPath];
+        [styledPath drawStyledPathInContext:context];
     }
     for (JAMStyledText *styledText in self.styledTexts) {
         [styledText drawStyledText];
@@ -101,19 +170,18 @@
     CGContextRestoreGState(context);
 }
 
-- (void)drawAtPoint:(CGPoint)point
+- (void)drawAtPoint:(CGPoint)point inContext:(CGContextRef)context
 {
-    [self drawInRect:CGRectMake(point.x, point.y, self.size.width, self.size.height)];
+    [self drawInRect:CGRectMake(point.x, point.y, self.size.width, self.size.height) inContext:context];
 }
 
-- (void)drawInRect:(CGRect)rect;
+- (void)drawInRect:(CGRect)rect inContext:(CGContextRef)context
 {
-    CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSaveGState(context);
     CGContextTranslateCTM(context, rect.origin.x, rect.origin.y);
     CGContextScaleCTM(context, rect.size.width / self.size.width, rect.size.height / self.size.height);
 
-    [self drawInCurrentContext];
+    [self drawInContext:context];
     CGContextRestoreGState(context);
 }
 
@@ -133,7 +201,8 @@
 - (UIImage *)imageAtSize:(CGSize)size;
 {
     UIGraphicsBeginImageContextWithOptions(size, NO, 0.f);
-    [self drawInRect:CGRectMake(0, 0, size.width, size.height)];
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    [self drawInRect:CGRectMake(0, 0, size.width, size.height) inContext:context];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return image;

@@ -39,6 +39,25 @@ CGFloat magnitude(CGPoint point)
 #pragma mark - Hella useful categories.
 
 @implementation NSString (Utilities)
+
+- (BOOL)doesContainString:(NSString *)aString;
+{
+    if ([self respondsToSelector:@selector(containsString:)]) {
+        return [self containsString:aString];
+    }
+    return [self rangeOfString:aString].location != NSNotFound;
+}
+
+- (NSArray<NSString *> *)componentsSeparatedByCharactersInString:(NSString *)string {
+    NSCharacterSet *set = [NSCharacterSet characterSetWithCharactersInString:string];
+    return [self componentsSeparatedByCharactersInSet:set];
+}
+
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)set {
+    NSArray *components = [self componentsSeparatedByCharactersInSet:set];
+    return [components componentsJoinedByString:@""];
+}
+
 - (NSString *)stringByTrimmingWhitespace;
 {
     return [self stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
@@ -64,11 +83,11 @@ CGFloat magnitude(CGPoint point)
 
 + (UIColor *)colorFromString:(NSString *)string;
 {
-    if ([string containsString:@"rgb"]) {
+    if ([string doesContainString:@"rgb"]) {
         return [UIColor colorFromRGBString:string];
-    } else if ([string containsString:@"#"]) {
+    } else if ([string doesContainString:@"#"]) {
         return [UIColor colorFromHexString:string];
-    } else if ([string containsString:@"hsl"]) {
+    } else if ([string doesContainString:@"hsl"]) {
         return [UIColor colorFromHSLString:string];
     }
     return nil;
@@ -95,10 +114,10 @@ CGFloat magnitude(CGPoint point)
 
 + (UIColor *)colorFromRGBString:(NSString *)rgbString;
 {
-    if (!rgbString || [rgbString containsString:@"none"]) { return nil; }
+    if (!rgbString || [rgbString doesContainString:@"none"]) { return nil; }
     
     NSScanner *scanner = [NSScanner scannerWithString:rgbString];
-    BOOL hasAlpha = [rgbString containsString:@"rgba"];
+    BOOL hasAlpha = [rgbString doesContainString:@"rgba"];
     if (![scanner scanString: hasAlpha ? @"rgba(" : @"rgb(" intoString:NULL]) { return nil; }
     
     float red = 0, green = 0, blue = 0, alpha = 1;
@@ -120,10 +139,10 @@ CGFloat magnitude(CGPoint point)
 
 + (UIColor *)colorFromHSLString:(NSString *)hslString;
 {
-    if (!hslString || [hslString containsString:@"none"]) { return nil; }
+    if (!hslString || [hslString doesContainString:@"none"]) { return nil; }
     
     NSScanner *scanner = [NSScanner scannerWithString:hslString];
-    BOOL hasAlpha = [hslString containsString:@"hsla"];
+    BOOL hasAlpha = [hslString doesContainString:@"hsla"];
     if (![scanner scanString: hasAlpha ? @"hsla(" : @"hsl(" intoString:NULL]) { return nil; }
     
     float hue = 0, saturation = 0, lightness = 0, alpha = 1;
@@ -156,7 +175,9 @@ CGFloat magnitude(CGPoint point)
 
 - (void)scanThroughWhitespaceCommasAndClosingParenthesis;
 {
-    [self scanCharactersFromSet:[NSCharacterSet characterSetWithCharactersInString:@" ,)"] intoString:NULL];
+    @autoreleasepool {
+        [self scanCharactersFromSet:[NSCharacterSet characterSetWithCharactersInString:@" ,)"] intoString:NULL];
+    }
 }
 
 - (NSString *)initialCharacter;
@@ -171,20 +192,24 @@ CGFloat magnitude(CGPoint point)
 
 - (void)scanThroughToHyphen;
 {
-    [self scanCharactersFromSet:[NSCharacterSet characterSetWithCharactersInString:@"0123456789.-"].invertedSet intoString:NULL];
+    @autoreleasepool {
+        [self scanCharactersFromSet:[NSCharacterSet characterSetWithCharactersInString:@"0123456789.-"].invertedSet intoString:NULL];
+    }
 }
 
 - (BOOL)scanPoint:(CGPoint *)point;
 {
-    [self scanUpToCharactersFromSet:NSCharacterSet.whitespaceAndNewlineCharacterSet.invertedSet intoString:NULL];
-    float xCoord, yCoord;
-    [self scanThroughToHyphen];
-    BOOL didScanX = [self scanFloat:&xCoord];
-    [self scanThroughToHyphen];
-    BOOL didScanY = [self scanFloat:&yCoord];
-    if (didScanX && didScanY) {
-        *point = CGPointMake(xCoord, yCoord);
-        return YES;
+    @autoreleasepool {
+        [self scanUpToCharactersFromSet:NSCharacterSet.whitespaceAndNewlineCharacterSet.invertedSet intoString:NULL];
+        float xCoord, yCoord;
+        [self scanThroughToHyphen];
+        BOOL didScanX = [self scanFloat:&xCoord];
+        [self scanThroughToHyphen];
+        BOOL didScanY = [self scanFloat:&yCoord];
+        if (didScanX && didScanY) {
+            *point = CGPointMake(xCoord, yCoord);
+            return YES;
+        }
     }
     return NO;
 }
@@ -217,11 +242,13 @@ CGFloat magnitude(CGPoint point)
 
 - (BOOL)scanCGFloat:(CGFloat *)scannedFloat;
 {
-    [self scanUpToCharactersFromSet:NSCharacterSet.whitespaceAndNewlineCharacterSet.invertedSet intoString:NULL];
-    float floatValue;
-    if ([self scanFloat:&floatValue]) {
-        *scannedFloat = (CGFloat)floatValue;
-        return YES;
+    @autoreleasepool {
+        [self scanUpToCharactersFromSet:NSCharacterSet.whitespaceAndNewlineCharacterSet.invertedSet intoString:NULL];
+        float floatValue;
+        if ([self scanFloat:&floatValue]) {
+            *scannedFloat = (CGFloat)floatValue;
+            return YES;
+        }
     }
     return NO;
 }
@@ -265,7 +292,7 @@ CGFloat magnitude(CGPoint point)
 
 - (CGFloat)strokeWeightForKey:(NSString *)key;
 {
-    return self[key] ? [self[key] floatValue] : 1.f;
+    return self[key] ? [self[key] floatValue] : 0.f;
 }
 
 - (CGLineJoin)lineJoinForKey:(NSString *)key;
