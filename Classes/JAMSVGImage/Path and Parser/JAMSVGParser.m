@@ -42,6 +42,8 @@
 {
     if (!(self = [super init]) || !path) return nil;
     
+    capture_text_content = false;
+    
     NSData *fileData;
     NSError *error;
     if ([path.lastPathComponent.pathExtension isEqualToString:@"svgz"]) {
@@ -63,6 +65,7 @@
     self.xmlParser = [NSXMLParser.alloc initWithData:data];
     self.xmlParser.delegate = self;
     self.paths = NSMutableArray.new;
+    self.texts = NSMutableArray.new;
     self.pathFactory = JAMStyledBezierPathFactory.new;
     self.groupLevel = 0;
     self.groupTransforms = NSMutableDictionary.new;
@@ -116,6 +119,20 @@
     if (path) {
         [self.paths addObject:path];
     }
+    temp_text = [self.pathFactory styledTextFromElementName:elementName attributes:attributeDict];
+    elementContentString = nil;
+    capture_text_content = true;
+}
+
+- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string{
+    
+    if (capture_text_content)
+    {
+        if(!elementContentString)
+            elementContentString = [[NSMutableString alloc] initWithString:string];
+        else
+            [elementContentString appendString:string];
+    }
 }
 
 - (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string {
@@ -152,6 +169,15 @@
         
         [self.pathFactory removeGroupOpacityValue];
         self.groupLevel--;
+    }
+    else if ([elementName isEqualToString:@"text"]) {
+        capture_text_content = false;
+        if (temp_text) {
+            [temp_text setStringContent:elementContentString];
+            [self.texts addObject:temp_text];
+            
+            elementContentString = nil;
+        }
     }
 }
 

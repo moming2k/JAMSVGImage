@@ -13,11 +13,11 @@
 #import "JAMSVGImage.h"
 #import "JAMSVGParser.h"
 #import "JAMStyledBezierPath.h"
+#import "JAMStyledText.h"
 
 @interface JAMSVGImage ()
-@property (nonatomic, readwrite) CGSize size;
-@property (nonatomic, copy, readwrite) NSArray<JAMStyledBezierPath *> *styledPaths;
-@property (nonatomic, readwrite) CGRect viewBox;
+@property (nonatomic) NSArray *styledPaths;
+@property (nonatomic) CGRect viewBox;
 @end
 
 @implementation JAMSVGImage
@@ -88,6 +88,7 @@ static NSCache *imageCache = nil;
     
     [parser parseSVGDocument];
     image.styledPaths = parser.paths;
+    image.styledTexts = parser.texts;
     image.viewBox = parser.viewBox;
     image.scale = 1;
     return image;
@@ -101,6 +102,7 @@ static NSCache *imageCache = nil;
     
     [parser parseSVGDocument];
     image.styledPaths = parser.paths;
+    image.styledTexts = parser.texts;
     image.viewBox = parser.viewBox;
     image.scale = 1;
     return image;
@@ -161,6 +163,9 @@ static NSCache *imageCache = nil;
     CGContextScaleCTM(context, self.scale, self.scale);
     for (JAMStyledBezierPath *styledPath in self.styledPaths) {
         [styledPath drawStyledPathInContext:context];
+    }
+    for (JAMStyledText *styledText in self.styledTexts) {
+        [styledText drawStyledText];
     }
     CGContextRestoreGState(context);
 }
