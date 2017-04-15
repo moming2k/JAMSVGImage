@@ -180,7 +180,14 @@
     else if ([elementName isEqualToString:@"text"]) {
         capture_text_content = false;
         if (temp_text) {
-            [temp_text setStringContent:elementContentString];
+            if (elementContentString)
+            {
+                [temp_text setStringContent:elementContentString];
+            }
+            else
+            {
+                [temp_text setStringContent:@"abcd"];
+            }
             [self.texts addObject:temp_text];
             
             elementContentString = nil;
