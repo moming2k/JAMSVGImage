@@ -31,6 +31,9 @@
 @property NSUInteger groupLevel;
 @property (nonatomic) NSMutableDictionary *groupTransforms;
 @property (nonatomic) NSMutableDictionary *groupAppearances;
+
+@property (nonatomic, strong) NSMutableDictionary *styleClassesToAttributes;
+@property (nonatomic) BOOL styleClassesParsing;
 @end
 
 @implementation JAMSVGParser
@@ -64,6 +67,7 @@
     self.groupLevel = 0;
     self.groupTransforms = NSMutableDictionary.new;
     self.groupAppearances = NSMutableDictionary.new;
+    _styleClassesToAttributes = [NSMutableDictionary dictionary];
     return self;
 }
 
@@ -78,6 +82,8 @@
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qualifiedName attributes:(NSDictionary *)attributeDict
 {
+    self.styleClassesParsing = [elementName isEqualToString:@"style"];
+    
     if ([elementName isEqualToString:@"svg"]) {
         self.viewBox = [self.pathFactory getViewboxFromAttributes:attributeDict];
         return;
@@ -96,9 +102,38 @@
             [self.pathFactory pushGroupTransformWithAttributes:attributeDict];
         }
     }
-    JAMStyledBezierPath *path = [self.pathFactory styledPathFromElementName:elementName attributes:attributeDict];
+    
+    NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithDictionary:attributeDict];
+    
+    NSString *pathClass = attributes[@"class"];
+    NSString *pathClassAttributes = self.styleClassesToAttributes[pathClass];
+    BOOL hasClassAttributes = pathClassAttributes != nil;
+    if (hasClassAttributes) {
+        attributes[@"style"] = pathClassAttributes;
+    }
+    
+    JAMStyledBezierPath *path = [self.pathFactory styledPathFromElementName:elementName attributes:attributes];
     if (path) {
         [self.paths addObject:path];
+    }
+}
+
+- (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string {
+    if (!self.styleClassesParsing) return;
+        
+    string = [string stringByRemovingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    NSArray *classesDefinitions = [string componentsSeparatedByString:@"."];
+    
+    for (NSString *classDefinition in classesDefinitions) {
+        NSArray *components = [classDefinition componentsSeparatedByCharactersInString:@"{}"];
+        if (components.count > 1) {
+            NSString *class = components[0];
+            NSString *attributes = components[1];
+            
+            if (class && attributes) {
+                self.styleClassesToAttributes[class] = attributes;
+            }
+        }
     }
 }
 

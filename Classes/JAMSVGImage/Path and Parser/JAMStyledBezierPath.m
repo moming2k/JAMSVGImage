@@ -13,17 +13,7 @@
 #import "JAMStyledBezierPath.h"
 #import "JAMSVGGradientParts.h"
 
-@interface JAMStyledBezierPath ()
-@property (nonatomic) UIBezierPath *path;
-@property (nonatomic) UIColor *fillColor;
-@property (nonatomic) UIColor *strokeColor;
-@property (nonatomic) JAMSVGGradient *gradient;
-@property (nonatomic) NSArray *affineTransforms;
-@property (nonatomic) NSNumber *opacity;
-@end
-
 @implementation JAMStyledBezierPath
-
 
 #pragma mark - NSCoding Methods
 
@@ -56,6 +46,7 @@
 + (instancetype)styledPathWithPath:(UIBezierPath *)path
                          fillColor:(UIColor *)fillColor
                        strokeColor:(UIColor *)strokeColor
+                        strokeWidth:(CGFloat)strokeWidth
                           gradient:(JAMSVGGradient *)gradient
                   affineTransforms:(NSArray *)transforms
                            opacity:(NSNumber *)opacity;
@@ -68,6 +59,23 @@
     styledPath.gradient = gradient;
     styledPath.affineTransforms = transforms;
     styledPath.opacity = opacity;
+    styledPath.strokeWidth = strokeWidth;
+    
+    return styledPath;
+}
+
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+    JAMStyledBezierPath *styledPath = [self.class new];
+    
+    styledPath.attributes = self.attributes;
+    styledPath.identifier = self.identifier;
+    styledPath.path = self.path;
+    styledPath.fillColor = self.fillColor;
+    styledPath.strokeColor = self.strokeColor;
+    styledPath.gradient = self.gradient;
+    styledPath.affineTransforms = self.affineTransforms;
+    styledPath.opacity = self.opacity;
+    styledPath.strokeWidth = self.strokeWidth;
     
     return styledPath;
 }
@@ -84,6 +92,7 @@
         CGContextSetAlpha(context, self.opacity.floatValue);
     }
     if (self.gradient) {
+        CGContextSaveGState(context);
         CGContextAddPath(context, self.path.CGPath);
         CGContextClip(context);
         [self.gradient drawInContext:context];
@@ -91,10 +100,29 @@
     } else if (self.fillColor) {
         CGContextSetFillColorWithColor(context, self.fillColor.CGColor);
         CGContextAddPath(context, self.path.CGPath);
-        CGContextFillPath(context);
+        if (self.path.usesEvenOddFillRule) {
+            CGContextEOFillPath(context);
+        } else {
+            CGContextFillPath(context);
+        }
     }
     if (self.strokeColor && self.path.lineWidth > 0.f) {
+        if (self.strokeWidth) {
+          CGContextSetLineWidth(context, self.strokeWidth);
+        }
         CGContextSetStrokeColorWithColor(context, self.strokeColor.CGColor);
+        CGContextSetLineWidth(context, self.path.lineWidth);
+        CGContextSetLineJoin(context, self.path.lineJoinStyle);
+        CGContextSetLineCap(context, self.path.lineCapStyle);
+        
+        NSInteger lineDashCount = 0;
+        [self.path getLineDash:NULL count:&lineDashCount phase:NULL];
+        if (lineDashCount > 0) {
+            CGFloat *dashArr = malloc(lineDashCount * sizeof(CGFloat));
+            [self.path getLineDash:dashArr count:NULL phase:NULL];
+            CGContextSetLineDash(context, 0, dashArr, lineDashCount);
+        }
+        
         CGContextAddPath(context, self.path.CGPath);
         CGContextStrokePath(context);
     }

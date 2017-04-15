@@ -10,6 +10,8 @@ CGFloat ratio(CGPoint point1, CGPoint point2);
 CGFloat magnitude(CGPoint point);
 
 @interface NSString (Utilities)
+- (NSArray<NSString *> *)componentsSeparatedByCharactersInString:(NSString *)string;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)set;
 - (NSString *)stringByTrimmingWhitespace;
 - (NSString *)characterStringAtIndex:(NSUInteger)index;
 - (NSString *)firstCharacter;

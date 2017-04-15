@@ -17,15 +17,6 @@
 
 #pragma mark - Private path properties.
 
-@interface JAMStyledBezierPath (Private)
-@property (nonatomic) UIBezierPath *path;
-@property (nonatomic) UIColor *fillColor;
-@property (nonatomic) UIColor *strokeColor;
-@property (nonatomic) JAMSVGGradient *gradient;
-@property (nonatomic) NSValue *transform;
-@property (nonatomic) NSNumber *opacity;
-@end
-
 @interface JAMStyledBezierPathFactory ()
 @property (nonatomic) NSMutableArray *gradients;
 @property CGPoint previousCurveOperationControlPoint;
@@ -50,6 +41,9 @@
 
 - (JAMStyledBezierPath *)styledPathFromElementName:(NSString *)elementName attributes:(NSDictionary *)attributes;
 {
+    attributes = [self attributesByAddingGroupAttributesToAttributes:attributes];
+    attributes = [self attributesByApplyingStyleAttributeToAttributes:attributes];
+    
     if ([elementName isEqualToString:@"circle"])
         return [self circleWithAttributes:attributes];
     
@@ -304,8 +298,7 @@
     return appliedAttributes.copy;
 }
 
-- (JAMStyledBezierPath *)createStyledPath:(UIBezierPath *)path withAttributes:(NSDictionary *)attributes;
-{
+- (JAMStyledBezierPath *)createStyledPath:(UIBezierPath *)path withAttributes:(NSDictionary *)attributes; {
     NSArray *transforms = nil;
     if (attributes[@"transform"] || self.affineTransformStack.count > 0) {
         if (attributes[@"transform"]) {
@@ -314,8 +307,6 @@
             transforms = self.affineTransformStack.copy;
         }
     }
-    attributes = [self attributesByAddingGroupAttributesToAttributes:attributes];
-    attributes = [self attributesByApplyingStyleAttributeToAttributes:attributes];
     
     NSString *fillColorString = ((NSString *)attributes[@"fill"]).lowercaseString;
     NSString *strokeColorString = ((NSString *)attributes[@"stroke"]).lowercaseString;
@@ -324,12 +315,18 @@
     UIColor *fillColor = fillColorStringValue ? [UIColor colorFromString:fillColorStringValue] : [attributes fillColorForKey:@"fill"];
     UIColor *strokeColor = strokeColorStringValue ? [UIColor colorFromString:strokeColorStringValue] : [attributes strokeColorForKey:@"stroke"];
     
-    return [JAMStyledBezierPath styledPathWithPath:[self applyStrokeAttributes:attributes toPath:path]
-                                         fillColor:fillColor
-                                       strokeColor:strokeColor
-                                          gradient:[self gradientForFillURL:attributes[@"fill"]]
-                                  affineTransforms:transforms
-                                           opacity:[self opacityFromAttributes:attributes]];
+    JAMStyledBezierPath *styledPath = [JAMStyledBezierPath new];
+    styledPath.attributes = attributes;
+    styledPath.identifier = attributes[@"id"];
+    styledPath.path = [self applyStrokeAttributes:attributes toPath:path];
+    styledPath.fillColor = fillColor;
+    styledPath.strokeColor = strokeColor;
+    styledPath.gradient = [self gradientForFillURL:attributes[@"fill"]];
+    styledPath.affineTransforms = transforms;
+    styledPath.opacity = [self opacityFromAttributes:attributes];
+    styledPath.strokeWidth = [attributes strokeWeightForKey:@"stroke-width"];
+    
+    return styledPath;
 }
 
 - (UIBezierPath *)applyStrokeAttributes:(NSDictionary *)attributes toPath:(UIBezierPath *)path;

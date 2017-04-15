@@ -21,7 +21,8 @@
     if (!(self = [super init])) { return nil; }
     
     self.identifier = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(identifier))];
-    self.colorStops = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(colorStops))];
+    NSArray *colorStops = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(colorStops))];
+    self.colorStops = [NSMutableArray arrayWithArray:colorStops ?: @[]];
     self.gradientTransform = [aDecoder decodeObjectForKey:NSStringFromSelector(@selector(gradientTransform))];
     
     return self;
@@ -42,6 +43,14 @@
     
     self.colorStops = NSMutableArray.new;
     return self;
+}
+
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+    JAMSVGGradient *gradient = [self.class new];
+    gradient.colorStops = [self.colorStops mutableCopy];
+    gradient.identifier = self.identifier;
+    gradient.gradientTransform = self.gradientTransform;
+    return gradient;
 }
 
 - (JAMSVGGradientType)gradientType;
@@ -85,9 +94,25 @@
 @end
 
 @implementation JAMSVGLinearGradient
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    JAMSVGLinearGradient *gradient = [super copyWithZone:zone];
+    gradient.startPosition = self.startPosition;
+    gradient.endPosition = self.endPosition;
+    return gradient;
+}
+
 @end
 
 @implementation JAMSVGRadialGradient
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+    JAMSVGRadialGradient *gradient = [super copyWithZone:zone];
+    gradient.position = self.position;
+    gradient.radius = self.radius;
+    return gradient;
+}
+
 @end
 
 @implementation JAMSVGGradientColorStop
@@ -115,9 +140,13 @@
 {
     if (!(self = [super init])) return nil;
     
-    self.color = color;
-    self.position = position;
+    _color = [color copy];
+    _position = position;
     return self;
+}
+
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
+    return [[JAMSVGGradientColorStop alloc] initWithColor:self.color position:self.position];
 }
 
 @end
