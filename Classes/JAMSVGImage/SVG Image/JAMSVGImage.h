@@ -15,7 +15,7 @@
 @class JAMStyledBezierPath;
 
 /** JAMSVGImage class is used for drawing resolution-independent vector graphics from an SVG file or data. Use JAMSVGImage to draw in any graphics context (most likely your custom view's drawRect: method) or, use it to populate a JAMSVGImageView and enjoy resolution-independent graphics at any size anywhere in your app! */
-@interface JAMSVGImage : NSObject <NSCoding>
+@interface JAMSVGImage : NSObject 
 
 @property (nonatomic, copy, readonly) NSArray<JAMStyledBezierPath *> *styledPaths;
 @property (nonatomic, readonly) CGRect viewBox;
