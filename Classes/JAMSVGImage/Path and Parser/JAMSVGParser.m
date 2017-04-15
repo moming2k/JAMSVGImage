@@ -152,6 +152,13 @@
             }
         }
     }
+    if (capture_text_content)
+    {
+        if(!elementContentString)
+            elementContentString = [[NSMutableString alloc] initWithString:string];
+        else
+            [elementContentString appendString:string];
+    }
 }
 
 - (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName;
