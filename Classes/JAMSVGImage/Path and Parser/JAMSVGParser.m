@@ -105,21 +105,36 @@
             [self.pathFactory pushGroupTransformWithAttributes:attributeDict];
         }
     }
+    
+    NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithDictionary:attributeDict];
+    
+    NSString *pathClasses = attributes[@"class"];
+    NSArray *classArray = [pathClasses componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+    for (NSString *class in classArray) {
+        NSString *pathClassAttributes = self.styleClassesToAttributes[class];
+        BOOL hasClassAttributes = pathClassAttributes != nil;
+        if (hasClassAttributes) {
+            if (attributes[@"style"])
+            {
+                attributes[@"style"] = [NSString stringWithFormat:@"%@ %@",attributes[@"style"] , pathClassAttributes] ;
+            }
+            else
+            {
+                attributes[@"style"] = [NSString stringWithFormat:@"%@",pathClassAttributes] ;
+            }
+            
+        }
+    }
+    
     if ([elementName isEqualToString:@"text"]) {
         NSLog(@"text");
-        temp_text = [self.pathFactory styledTextFromElementName:elementName attributes:attributeDict];
+        
+        temp_text = [self.pathFactory styledTextFromElementName:elementName attributes:attributes];
         elementContentString = [[NSMutableString alloc] initWithString:@""];
         capture_text_content = true;
     }
     
-    NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithDictionary:attributeDict];
     
-    NSString *pathClass = attributes[@"class"];
-    NSString *pathClassAttributes = self.styleClassesToAttributes[pathClass];
-    BOOL hasClassAttributes = pathClassAttributes != nil;
-    if (hasClassAttributes) {
-        attributes[@"style"] = pathClassAttributes;
-    }
     
     JAMStyledBezierPath *path = [self.pathFactory styledPathFromElementName:elementName attributes:attributes];
     if (path) {
