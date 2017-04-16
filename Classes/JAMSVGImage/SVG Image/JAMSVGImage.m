@@ -166,7 +166,7 @@ static NSCache *imageCache = nil;
         [styledPath drawStyledPathInContext:context];
     }
     for (JAMStyledText *styledText in self.styledTexts) {
-        [styledText drawStyledText];
+        [styledText drawStyledTextInContext:context];
     }
     CGContextRestoreGState(context);
 }

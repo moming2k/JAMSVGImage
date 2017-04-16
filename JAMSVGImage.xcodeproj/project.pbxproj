@@ -58,6 +58,7 @@
 		723B244D1A52AF75004B7587 /* map_north_1.svg in Resources */ = {isa = PBXBuildFile; fileRef = 723B244C1A52AF75004B7587 /* map_north_1.svg */; };
 		723B24501A52D2BC004B7587 /* JAMStyledText.m in Sources */ = {isa = PBXBuildFile; fileRef = 723B244F1A52D2BC004B7587 /* JAMStyledText.m */; };
 		72E0FC8E1EA2C9CD00233945 /* map.svg in Resources */ = {isa = PBXBuildFile; fileRef = 72E0FC8D1EA2C9CD00233945 /* map.svg */; };
+		72E0FC901EA3D79E00233945 /* map2.svg in Resources */ = {isa = PBXBuildFile; fileRef = 72E0FC8F1EA3D79E00233945 /* map2.svg */; };
 		EB5881E019D5CE2900797A2E /* Launch.xib in Resources */ = {isa = PBXBuildFile; fileRef = EB5881DF19D5CE2900797A2E /* Launch.xib */; };
 /* End PBXBuildFile section */
 
@@ -128,6 +129,7 @@
 		723B244E1A52D2BC004B7587 /* JAMStyledText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JAMStyledText.h; path = "Path and Parser/JAMStyledText.h"; sourceTree = "<group>"; };
 		723B244F1A52D2BC004B7587 /* JAMStyledText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = JAMStyledText.m; path = "Path and Parser/JAMStyledText.m"; sourceTree = "<group>"; };
 		72E0FC8D1EA2C9CD00233945 /* map.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = map.svg; sourceTree = "<group>"; };
+		72E0FC8F1EA3D79E00233945 /* map2.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = map2.svg; sourceTree = "<group>"; };
 		EB5881DF19D5CE2900797A2E /* Launch.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = Launch.xib; path = ../Launch.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -179,6 +181,7 @@
 		631522221A55DD7600680632 /* svg */ = {
 			isa = PBXGroup;
 			children = (
+				72E0FC8F1EA3D79E00233945 /* map2.svg */,
 				72E0FC8D1EA2C9CD00233945 /* map.svg */,
 				631D93EC1A6377CC00AFAF51 /* apple.svgz */,
 			);
@@ -402,6 +405,7 @@
 				631522281A55DD7600680632 /* apple@2x.png in Resources */,
 				63AD793C1A3FBFF800987249 /* paths-data-15-t.svg in Resources */,
 				63AD79331A3FBFF800987249 /* paths-data-05-t.svg in Resources */,
+				72E0FC901EA3D79E00233945 /* map2.svg in Resources */,
 				63AD793D1A3FBFF800987249 /* paths-data-16-t.svg in Resources */,
 				6380F68D1A41110300D7C9B4 /* JAMViewController.xib in Resources */,
 				631D93ED1A6377CC00AFAF51 /* apple.svgz in Resources */,
@@ -548,7 +552,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "JAMSVGImage/JAMSVGImage-Prefix.pch";
 				INFOPLIST_FILE = "JAMSVGImage/JAMSVGImage-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -563,7 +567,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "JAMSVGImage/JAMSVGImage-Prefix.pch";
 				INFOPLIST_FILE = "JAMSVGImage/JAMSVGImage-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;

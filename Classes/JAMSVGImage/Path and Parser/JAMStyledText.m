@@ -29,6 +29,7 @@
                        strokeColor:(UIColor *)strokeColor
                   affineTransforms:(NSArray *)transforms
                            opacity:(NSNumber *)opacity
+                          attributes:attributes
 {
     JAMStyledText *styledText = JAMStyledText.new;
     styledText.x = x;
@@ -39,13 +40,14 @@
     styledText.strokeColor = strokeColor;
     styledText.affineTransforms = transforms;
     styledText.opacity = opacity;
+    styledText.attributes = attributes;
     
     return styledText;
 }
 
-- (void)drawStyledText;
+- (void)drawStyledTextInContext:(CGContextRef)context
 {
-    CGContextRef context = UIGraphicsGetCurrentContext();
+//    CGContextRef context = UIGraphicsGetCurrentContext();
     if (!context) return;
     
     CGContextSaveGState(context);
@@ -73,7 +75,24 @@
     if (self.fillColor) {
         CGContextSetTextDrawingMode(context, kCGTextFill);
         CGContextSetFillColorWithColor(context, self.fillColor.CGColor);
-        [self.string drawAtPoint:CGPointMake(self.x, self.y - rect.size.height)];
+        
+//        NSDictionary *getFromFont = [self.string attributesAtIndex:0 longestEffectiveRange:nil inRange:NSMakeRange(0, self.string.length)];
+        NSMutableDictionary *textAttributes = [[NSMutableDictionary alloc] init];
+        if([self.attributes objectForKey:@"font-size"])
+        {
+            float font_size = [[self.attributes objectForKey:@"font-size"] floatValue];
+            UIFont *font = [UIFont systemFontOfSize:font_size];
+            [textAttributes setObject:font forKey:NSFontAttributeName];
+        }
+        
+//        NSDictionary *textAttributes = @{NSFontAttributeName: [UIFont systemFontOfSize:5.0]}; //[self.string attributesAtIndex:0 longestEffectiveRange:nil inRange:NSMakeRange(0, self.string.length)]; // @{NSFontAttributeName: [UIFont systemFontOfSize:6.0]};
+
+        NSStringDrawingContext *drawingContext = [[NSStringDrawingContext alloc] init];
+//        [self.string drawAtPoint:CGPointMake(self.x, self.y - rect.size.height)];
+        
+        CGRect drawRect = CGRectMake(0.0, 0.0, 200.0, 100.0);
+//        NSAttributedString *string2 = [[NSAttributedString alloc] initWithString:@""];
+        [[self.string string] drawWithRect:drawRect options:NSStringDrawingUsesDeviceMetrics attributes:textAttributes context:drawingContext];
     }
     
     CGContextRestoreGState(context);
@@ -86,6 +105,7 @@
 
 - (void)setStringContent:(NSString *)string
 {
+    NSLog(@"attributes = %@",self.attributes);
     [self.string replaceCharactersInRange:NSMakeRange(0, self.string.length) withString:string];
 }
 

@@ -307,7 +307,7 @@
     UIColor *fillColor = fillColorStringValue ? [UIColor colorFromString:fillColorStringValue] : [attributes fillColorForKey:@"fill"];
     UIColor *strokeColor = strokeColorStringValue ? [UIColor colorFromString:strokeColorStringValue] : [attributes strokeColorForKey:@"stroke"];
     
-    JAMStyledText *text = [JAMStyledText styledTextWithString:tempString withX:x withY:y fillColor:fillColor strokeColor:strokeColor affineTransforms:transforms opacity:[self opacityFromAttributes:attributes]];
+    JAMStyledText *text = [JAMStyledText styledTextWithString:tempString withX:x withY:y fillColor:fillColor strokeColor:strokeColor affineTransforms:transforms opacity:[self opacityFromAttributes:attributes] attributes:attributes];
     
     return text;
 }

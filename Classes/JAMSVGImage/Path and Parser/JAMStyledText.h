@@ -20,10 +20,11 @@
                            fillColor:(UIColor *)fillColor
                          strokeColor:(UIColor *)strokeColor
                     affineTransforms:(NSArray *)transforms
-                             opacity:(NSNumber *)opacity;
+                             opacity:(NSNumber *)opacity
+                          attributes:attributes;
 
 /** Draws the styled text in the current graphics context. */
-- (void)drawStyledText;
+- (void)drawStyledTextInContext:(CGContextRef)context;
 
 - (void)setStringContent:(NSString *)string;
 
