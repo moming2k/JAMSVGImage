@@ -7,6 +7,7 @@
 //
 
 #import "JAMStyledText.h"
+#import "JAMSVGUtilities.h"
 
 @interface JAMStyledText ()
 @property (nonatomic) NSMutableAttributedString *string;
@@ -83,6 +84,11 @@
             float font_size = [[self.attributes objectForKey:@"font-size"] floatValue];
             UIFont *font = [UIFont systemFontOfSize:font_size];
             [textAttributes setObject:font forKey:NSFontAttributeName];
+        }
+        if([self.attributes objectForKey:@"fill"])
+        {
+            UIColor *color = [UIColor colorFromString:[self.attributes objectForKey:@"fill"]];
+            [textAttributes setObject:color forKey:NSForegroundColorAttributeName];
         }
         
 //        NSDictionary *textAttributes = @{NSFontAttributeName: [UIFont systemFontOfSize:5.0]}; //[self.string attributesAtIndex:0 longestEffectiveRange:nil inRange:NSMakeRange(0, self.string.length)]; // @{NSFontAttributeName: [UIFont systemFontOfSize:6.0]};
