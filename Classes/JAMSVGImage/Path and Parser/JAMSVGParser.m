@@ -164,8 +164,39 @@
     }
     
     if (!self.styleClassesParsing) return;
-        
-    string = [string stringByRemovingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    
+//    "\.(.*?)\{(.*?)\}"
+    
+    NSError *error = NULL;
+    NSRegularExpressionOptions regexOptions = NSRegularExpressionCaseInsensitive;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\\.(.*?\\{.*?)\\}" options:regexOptions error:&error];
+    if (error)
+    {
+        NSLog(@"Couldn't create regex with given string and options");
+    }
+    
+    NSRange visibleTextRange = NSMakeRange(0, string.length);
+    NSArray *matches = [regex matchesInString:string options:NSMatchingProgress range:visibleTextRange];
+    
+    for (NSTextCheckingResult *match in matches)
+    {
+        NSRange matchRange = match.range;
+        NSString *target = [string substringWithRange:matchRange];
+        NSArray *components = [target componentsSeparatedByCharactersInString:@".{}"];
+        if (components.count > 1) {
+            NSString *class = components[1];
+            NSString *attributes = components[2];
+            
+            if (class && attributes) {
+                self.styleClassesToAttributes[class] = attributes;
+            }
+        }
+//        [visibleAttributedText addAttribute:NSBackgroundColorAttributeName value:[UIColor yellowColor] range:matchRange];
+    }
+    
+    
+    
+    /*string = [string stringByRemovingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
     NSArray *classesDefinitions = [string componentsSeparatedByString:@"."];
     
     for (NSString *classDefinition in classesDefinitions) {
@@ -178,7 +209,7 @@
                 self.styleClassesToAttributes[class] = attributes;
             }
         }
-    }
+    }*/
     
 }
 
