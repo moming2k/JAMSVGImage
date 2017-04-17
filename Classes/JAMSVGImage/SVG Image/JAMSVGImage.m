@@ -160,7 +160,7 @@ static NSCache *imageCache = nil;
 - (void)drawInContext:(CGContextRef)context
 {
     CGContextSaveGState(context);
-    CGContextTranslateCTM(context, -self.viewBox.origin.x, -self.viewBox.origin.y);
+    CGContextTranslateCTM(context, -self.viewBox.origin.x*self.scale, -self.viewBox.origin.y*self.scale);
     CGContextScaleCTM(context, self.scale, self.scale);
     for (JAMStyledBezierPath *styledPath in self.styledPaths) {
         [styledPath drawStyledPathInContext:context];
@@ -179,7 +179,7 @@ static NSCache *imageCache = nil;
 - (void)drawInRect:(CGRect)rect inContext:(CGContextRef)context
 {
     CGContextSaveGState(context);
-    CGContextTranslateCTM(context, rect.origin.x*self.scale, rect.origin.y*self.scale);
+    CGContextTranslateCTM(context, rect.origin.x, rect.origin.y);
     CGContextScaleCTM(context, rect.size.width / self.size.width, rect.size.height / self.size.height);
 
     [self drawInContext:context];
