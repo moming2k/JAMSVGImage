@@ -179,7 +179,7 @@ static NSCache *imageCache = nil;
 - (void)drawInRect:(CGRect)rect inContext:(CGContextRef)context
 {
     CGContextSaveGState(context);
-    CGContextTranslateCTM(context, rect.origin.x, rect.origin.y);
+    CGContextTranslateCTM(context, rect.origin.x*self.scale, rect.origin.y*self.scale);
     CGContextScaleCTM(context, rect.size.width / self.size.width, rect.size.height / self.size.height);
 
     [self drawInContext:context];
